@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Mail, Upload, Plus, Trash2, X, Send, CheckCircle } from "lucide-react";
+import { Mail, Upload, Plus, Trash2, X, Send, CheckCircle, UserPlus, Clipboard } from "lucide-react";
 import { useNotifications } from "@/contexts/NotificationContext";
 
 interface InviteModalProps {
@@ -18,13 +18,15 @@ interface InviteModalProps {
 
 export const InviteModal = ({ isOpen, onClose }: InviteModalProps) => {
   const [activeTab, setActiveTab] = useState("individual");
-  const [invites, setInvites] = useState<Array<{ email: string; role: string }>>([
-    { email: "", role: "employee" }
+  const [invites, setInvites] = useState<Array<{ email: string; role: string; name: string }>>([
+    { email: "", role: "employee", name: "" }
   ]);
   const [bulkEmails, setBulkEmails] = useState("");
   const [bulkRole, setBulkRole] = useState("employee");
   const [isSending, setIsSending] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [inviteLink, setInviteLink] = useState("https://shiftly.app/join?code=ABC123XYZ");
+  const [linkCopied, setLinkCopied] = useState(false);
   const { addNotification } = useNotifications();
   
   const roles = [
@@ -34,7 +36,7 @@ export const InviteModal = ({ isOpen, onClose }: InviteModalProps) => {
   ];
   
   const handleAddInvite = () => {
-    setInvites([...invites, { email: "", role: "employee" }]);
+    setInvites([...invites, { email: "", role: "employee", name: "" }]);
   };
   
   const handleRemoveInvite = (index: number) => {
@@ -43,7 +45,7 @@ export const InviteModal = ({ isOpen, onClose }: InviteModalProps) => {
     setInvites(newInvites);
   };
   
-  const handleInviteChange = (index: number, field: "email" | "role", value: string) => {
+  const handleInviteChange = (index: number, field: "email" | "role" | "name", value: string) => {
     const newInvites = [...invites];
     newInvites[index][field] = value;
     setInvites(newInvites);
@@ -58,6 +60,21 @@ export const InviteModal = ({ isOpen, onClose }: InviteModalProps) => {
   const removeBulkEmail = (emailToRemove: string) => {
     const emails = extractEmails().filter(email => email !== emailToRemove);
     setBulkEmails(emails.join(", "));
+  };
+  
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText(inviteLink);
+    setLinkCopied(true);
+    
+    addNotification({
+      title: "Link copied!",
+      message: "Invite link has been copied to clipboard.",
+      type: "success",
+    });
+    
+    setTimeout(() => {
+      setLinkCopied(false);
+    }, 2000);
   };
   
   const handleSendInvites = () => {
@@ -93,9 +110,12 @@ export const InviteModal = ({ isOpen, onClose }: InviteModalProps) => {
   
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[550px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-xl">Invite Team Members</DialogTitle>
+          <DialogTitle className="text-xl flex items-center gap-2">
+            <UserPlus className="h-5 w-5 text-shiftly-blue" />
+            Invite Team Members
+          </DialogTitle>
           <DialogDescription>
             Invite your team members to join Shiftly and access their schedules.
           </DialogDescription>
@@ -104,52 +124,67 @@ export const InviteModal = ({ isOpen, onClose }: InviteModalProps) => {
         {!isSuccess ? (
           <>
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="grid w-full grid-cols-2">
+              <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="individual">Individual</TabsTrigger>
                 <TabsTrigger value="bulk">Bulk Invite</TabsTrigger>
+                <TabsTrigger value="link">Invite Link</TabsTrigger>
               </TabsList>
               
               <TabsContent value="individual" className="space-y-4 mt-4">
                 {invites.map((invite, index) => (
-                  <div key={index} className="flex gap-2 items-start">
-                    <div className="flex-1">
-                      <Label htmlFor={`email-${index}`} className="sr-only">Email</Label>
+                  <div key={index} className="space-y-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                    <div className="space-y-2">
+                      <Label htmlFor={`name-${index}`}>Name (optional)</Label>
                       <Input
-                        id={`email-${index}`}
-                        placeholder="Email address"
-                        value={invite.email}
-                        onChange={(e) => handleInviteChange(index, "email", e.target.value)}
+                        id={`name-${index}`}
+                        placeholder="Employee name"
+                        value={invite.name}
+                        onChange={(e) => handleInviteChange(index, "name", e.target.value)}
                       />
                     </div>
                     
-                    <div className="w-32">
-                      <Label htmlFor={`role-${index}`} className="sr-only">Role</Label>
-                      <Select 
-                        value={invite.role} 
-                        onValueChange={(value) => handleInviteChange(index, "role", value)}
+                    <div className="flex gap-2 items-start">
+                      <div className="flex-1">
+                        <Label htmlFor={`email-${index}`}>Email address</Label>
+                        <Input
+                          id={`email-${index}`}
+                          placeholder="Email address"
+                          value={invite.email}
+                          onChange={(e) => handleInviteChange(index, "email", e.target.value)}
+                          className="mt-1"
+                        />
+                      </div>
+                      
+                      <div className="w-32">
+                        <Label htmlFor={`role-${index}`}>Role</Label>
+                        <Select 
+                          value={invite.role} 
+                          onValueChange={(value) => handleInviteChange(index, "role", value)}
+                        >
+                          <SelectTrigger id={`role-${index}`} className="mt-1">
+                            <SelectValue placeholder="Role" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {roles.map((role) => (
+                              <SelectItem key={role.id} value={role.id}>
+                                {role.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleRemoveInvite(index)}
+                        disabled={invites.length === 1}
+                        className="mt-7"
                       >
-                        <SelectTrigger id={`role-${index}`}>
-                          <SelectValue placeholder="Role" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {roles.map((role) => (
-                            <SelectItem key={role.id} value={role.id}>
-                              {role.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                        <Trash2 size={16} />
+                        <span className="sr-only">Remove</span>
+                      </Button>
                     </div>
-                    
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleRemoveInvite(index)}
-                      disabled={invites.length === 1}
-                    >
-                      <Trash2 size={16} />
-                      <span className="sr-only">Remove</span>
-                    </Button>
                   </div>
                 ))}
                 
@@ -180,7 +215,7 @@ export const InviteModal = ({ isOpen, onClose }: InviteModalProps) => {
                   <Textarea
                     id="bulkEmails"
                     placeholder="Enter email addresses separated by commas, spaces, or new lines"
-                    rows={4}
+                    rows={5}
                     value={bulkEmails}
                     onChange={(e) => setBulkEmails(e.target.value)}
                   />
@@ -224,26 +259,96 @@ export const InviteModal = ({ isOpen, onClose }: InviteModalProps) => {
                   </div>
                 )}
               </TabsContent>
+              
+              <TabsContent value="link" className="space-y-4 mt-4">
+                <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 flex items-start gap-3">
+                  <div className="bg-blue-100 dark:bg-blue-800 rounded-full p-2 mt-0.5">
+                    <Mail size={16} className="text-blue-600 dark:text-blue-300" />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-medium text-blue-800 dark:text-blue-300">Share invite link</h4>
+                    <p className="text-sm text-blue-600 dark:text-blue-400 mt-1">
+                      Anyone with this link can join your organization. You can set their role after they join.
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="inviteLink">Invitation link</Label>
+                  <div className="flex">
+                    <Input
+                      id="inviteLink"
+                      value={inviteLink}
+                      readOnly
+                      className="rounded-r-none"
+                    />
+                    <Button 
+                      onClick={handleCopyLink}
+                      className={`rounded-l-none ${linkCopied ? 'bg-green-600' : 'bg-shiftly-blue'}`}
+                    >
+                      {linkCopied ? (
+                        <>
+                          <CheckCircle size={16} className="mr-2" />
+                          Copied
+                        </>
+                      ) : (
+                        <>
+                          <Clipboard size={16} className="mr-2" />
+                          Copy
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="defaultRole">Default role for link invites</Label>
+                  <Select defaultValue="employee">
+                    <SelectTrigger id="defaultRole">
+                      <SelectValue placeholder="Select role" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {roles.map((role) => (
+                        <SelectItem key={role.id} value={role.id}>
+                          {role.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="pt-4">
+                  <Button 
+                    variant="outline" 
+                    className="w-full"
+                    onClick={handleCopyLink}
+                  >
+                    {linkCopied ? "Link Copied!" : "Copy Invite Link"}
+                  </Button>
+                </div>
+              </TabsContent>
             </Tabs>
             
             <DialogFooter>
               <Button variant="outline" onClick={onClose}>
                 Cancel
               </Button>
-              <Button 
-                onClick={handleSendInvites} 
-                disabled={!isFormValid() || isSending}
-                className="bg-shiftly-blue hover:bg-shiftly-blue/90"
-              >
-                {isSending ? (
-                  <>Sending...</>
-                ) : (
-                  <>
-                    <Send size={16} className="mr-2" />
-                    Send Invitations
-                  </>
-                )}
-              </Button>
+              {activeTab !== "link" && (
+                <Button 
+                  onClick={handleSendInvites} 
+                  disabled={!isFormValid() || isSending}
+                  className="bg-shiftly-blue hover:bg-shiftly-blue/90"
+                >
+                  {isSending ? (
+                    <>Sending...</>
+                  ) : (
+                    <>
+                      <Send size={16} className="mr-2" />
+                      Send Invitations
+                    </>
+                  )}
+                </Button>
+              )}
             </DialogFooter>
           </>
         ) : (

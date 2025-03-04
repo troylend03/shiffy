@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
@@ -24,12 +23,14 @@ import {
 import { InviteModal } from "@/components/team/InviteModal";
 import { CreateScheduleModal } from "@/components/schedule/CreateScheduleModal";
 import { PositionsRolesModal } from "@/components/positions/PositionsRolesModal";
+import { CompanyProfileModal } from "@/components/company/CompanyProfileModal";
 
 const Index = () => {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [showPositionsModal, setShowPositionsModal] = useState(false);
+  const [showCompanyProfileModal, setShowCompanyProfileModal] = useState(false);
   const { addNotification } = useNotifications();
   
   const handleCompleteOnboarding = () => {
@@ -60,8 +61,8 @@ const Index = () => {
   ];
   
   const setupTasks = [
-    { id: 1, title: "Complete company profile", completed: true },
-    { id: 2, title: "Invite team members", completed: true },
+    { id: 1, title: "Complete company profile", completed: false },
+    { id: 2, title: "Invite team members", completed: false },
     { id: 3, title: "Create your first schedule", completed: false },
     { id: 4, title: "Set up positions and roles", completed: false },
     { id: 5, title: "Configure notification preferences", completed: false },
@@ -71,14 +72,17 @@ const Index = () => {
   const setupProgress = (completedTasks / setupTasks.length) * 100;
   
   const quickStats = [
-    { title: "Team Members", value: "4", icon: Users, color: "bg-blue-500" },
-    { title: "Published Shifts", value: "12", icon: Calendar, color: "bg-green-500" },
-    { title: "Open Shifts", value: "3", icon: ClipboardList, color: "bg-yellow-500" },
-    { title: "Unread Messages", value: "2", icon: MessageSquare, color: "bg-purple-500" },
+    { title: "Team Members", value: "0", icon: Users, color: "bg-blue-500" },
+    { title: "Published Shifts", value: "0", icon: Calendar, color: "bg-green-500" },
+    { title: "Open Shifts", value: "0", icon: ClipboardList, color: "bg-yellow-500" },
+    { title: "Unread Messages", value: "0", icon: MessageSquare, color: "bg-purple-500" },
   ];
 
   const handleStartFlow = (taskId: number) => {
     switch (taskId) {
+      case 1: // Complete company profile
+        setShowCompanyProfileModal(true);
+        break;
       case 2: // Invite team members
         setShowInviteModal(true);
         break;
@@ -199,53 +203,8 @@ const Index = () => {
               <CardTitle className="text-xl">Recent Activity</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-8">
-                <div className="flex gap-4">
-                  <Avatar>
-                    <div className="bg-green-100 dark:bg-green-900 h-full w-full flex items-center justify-center">
-                      <span className="text-xs font-medium text-green-600 dark:text-green-300">LC</span>
-                    </div>
-                  </Avatar>
-                  <div className="space-y-1">
-                    <p className="text-sm">
-                      <span className="font-medium">Laura Castro</span>{" "}
-                      <span className="text-gray-500 dark:text-gray-400">accepted a shift swap with</span>{" "}
-                      <span className="font-medium">Leonardo DaVinci</span>
-                    </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">Today at 2:30 PM</p>
-                  </div>
-                </div>
-                
-                <div className="flex gap-4">
-                  <Avatar>
-                    <div className="bg-blue-100 dark:bg-blue-900 h-full w-full flex items-center justify-center">
-                      <span className="text-xs font-medium text-blue-600 dark:text-blue-300">LD</span>
-                    </div>
-                  </Avatar>
-                  <div className="space-y-1">
-                    <p className="text-sm">
-                      <span className="font-medium">Leonardo DaVinci</span>{" "}
-                      <span className="text-gray-500 dark:text-gray-400">requested time off for</span>{" "}
-                      <span className="font-medium">Dec 24-26, 2024</span>
-                    </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">Yesterday at 4:45 PM</p>
-                  </div>
-                </div>
-                
-                <div className="flex gap-4">
-                  <Avatar>
-                    <div className="bg-purple-100 dark:bg-purple-900 h-full w-full flex items-center justify-center">
-                      <span className="text-xs font-medium text-purple-600 dark:text-purple-300">OM</span>
-                    </div>
-                  </Avatar>
-                  <div className="space-y-1">
-                    <p className="text-sm">
-                      <span className="font-medium">Olivia Munoz</span>{" "}
-                      <span className="text-gray-500 dark:text-gray-400">clocked in 5 minutes early for their shift</span>
-                    </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">Dec 5, 2024 at 7:55 AM</p>
-                  </div>
-                </div>
+              <div className="flex items-center justify-center h-40 text-gray-500">
+                Complete setup tasks to see activity here
               </div>
             </CardContent>
           </Card>
@@ -269,6 +228,14 @@ const Index = () => {
               >
                 <Users size={16} className="mr-2" />
                 Invite Team Members
+              </Button>
+              <Button 
+                variant="outline" 
+                className="w-full justify-start"
+                onClick={() => setShowCompanyProfileModal(true)}
+              >
+                <Briefcase size={16} className="mr-2" />
+                Edit Company Profile
               </Button>
               <Button variant="outline" className="w-full justify-start">
                 <Mail size={16} className="mr-2" />
@@ -309,6 +276,13 @@ const Index = () => {
         <PositionsRolesModal 
           isOpen={showPositionsModal} 
           onClose={() => setShowPositionsModal(false)} 
+        />
+      )}
+
+      {showCompanyProfileModal && (
+        <CompanyProfileModal
+          isOpen={showCompanyProfileModal}
+          onClose={() => setShowCompanyProfileModal(false)}
         />
       )}
     </AppLayout>
