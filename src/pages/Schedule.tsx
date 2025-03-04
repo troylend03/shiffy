@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
@@ -11,6 +10,18 @@ import { ScheduleGrid } from "@/components/schedule/ScheduleGrid";
 import { ScheduleHeader } from "@/components/schedule/ScheduleHeader";
 import { ShiftModal } from "@/components/schedule/ShiftModal";
 import { useToast } from "@/hooks/use-toast";
+
+const mockTeamMembers = [
+  { id: "1", name: "John Doe", position: "Cashier" },
+  { id: "2", name: "Jane Smith", position: "Manager" },
+  { id: "3", name: "Mike Johnson", position: "Stocker" }
+];
+
+const mockPositions = [
+  { id: "1", name: "Cashier" },
+  { id: "2", name: "Manager" },
+  { id: "3", name: "Stocker" }
+];
 
 const Schedule = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -59,6 +70,14 @@ const Schedule = () => {
 
   const handleCreateShift = () => {
     setShowShiftModal(true);
+  };
+
+  const handleSaveShift = (shiftData: any) => {
+    setShowShiftModal(false);
+    toast({
+      title: "Shift created!",
+      description: "The shift has been added to the schedule.",
+    });
   };
 
   return (
@@ -129,9 +148,12 @@ const Schedule = () => {
           <CardContent className="p-0">
             {scheduleCreated ? (
               <div>
-                <ScheduleHeader date={startDate} viewType={currentView} />
+                <ScheduleHeader 
+                  currentDate={startDate} 
+                  viewType={currentView} 
+                />
                 <ScheduleGrid 
-                  startDate={startDate} 
+                  currentDate={startDate} 
                   viewType={currentView} 
                   onCreateShift={handleCreateShift}
                 />
@@ -243,6 +265,9 @@ const Schedule = () => {
         <ShiftModal
           isOpen={showShiftModal}
           onClose={() => setShowShiftModal(false)}
+          teamMembers={mockTeamMembers}
+          positions={mockPositions}
+          onSave={handleSaveShift}
         />
       )}
     </AppLayout>

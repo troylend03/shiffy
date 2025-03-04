@@ -309,7 +309,7 @@ const Index = () => {
         <InviteModal 
           isOpen={showInviteModal} 
           onClose={() => setShowInviteModal(false)}
-          onInvite={handleInviteTeamMembers}
+          onSubmit={handleInviteTeamMembers}
         />
       )}
 
@@ -325,7 +325,7 @@ const Index = () => {
         <PositionsRolesModal 
           isOpen={showPositionsModal} 
           onClose={() => setShowPositionsModal(false)}
-          onSave={handleSetupPositions}
+          onSubmit={handleSetupPositions}
         />
       )}
 
@@ -333,7 +333,7 @@ const Index = () => {
         <CompanyProfileModal
           isOpen={showCompanyProfileModal}
           onClose={() => setShowCompanyProfileModal(false)}
-          onSave={handleCompleteCompanyProfile}
+          onSubmit={handleCompleteCompanyProfile}
         />
       )}
     </AppLayout>
