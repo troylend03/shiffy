@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -24,6 +24,7 @@ import { InviteModal } from "@/components/team/InviteModal";
 import { CreateScheduleModal } from "@/components/schedule/CreateScheduleModal";
 import { PositionsRolesModal } from "@/components/positions/PositionsRolesModal";
 import { CompanyProfileModal } from "@/components/company/CompanyProfileModal";
+import { useNavigate } from "react-router-dom";
 
 const Index = () => {
   const [showOnboarding, setShowOnboarding] = useState(false);
@@ -32,12 +33,95 @@ const Index = () => {
   const [showPositionsModal, setShowPositionsModal] = useState(false);
   const [showCompanyProfileModal, setShowCompanyProfileModal] = useState(false);
   const { addNotification } = useNotifications();
+  const navigate = useNavigate();
   
+  const [setupTasks, setSetupTasks] = useState([
+    { id: 1, title: "Complete company profile", completed: false },
+    { id: 2, title: "Invite team members", completed: false },
+    { id: 3, title: "Create your first schedule", completed: false },
+    { id: 4, title: "Set up positions and roles", completed: false },
+    { id: 5, title: "Configure notification preferences", completed: false },
+  ]);
+  
+  const completedTasks = setupTasks.filter(task => task.completed).length;
+  const setupProgress = (completedTasks / setupTasks.length) * 100;
+  
+  const quickStats = [
+    { title: "Team Members", value: "0", icon: Users, color: "bg-blue-500" },
+    { title: "Published Shifts", value: "0", icon: Calendar, color: "bg-green-500" },
+    { title: "Open Shifts", value: "0", icon: ClipboardList, color: "bg-yellow-500" },
+    { title: "Unread Messages", value: "0", icon: MessageSquare, color: "bg-purple-500" },
+  ];
+
   const handleCompleteOnboarding = () => {
     setShowOnboarding(false);
     addNotification({
       title: "Onboarding complete!",
       message: "You're all set to start using Shiftly.",
+      type: "success",
+    });
+  };
+
+  const handleStartFlow = (taskId: number) => {
+    switch (taskId) {
+      case 1: // Complete company profile
+        setShowCompanyProfileModal(true);
+        break;
+      case 2: // Invite team members
+        setShowInviteModal(true);
+        break;
+      case 3: // Create your first schedule
+        setShowScheduleModal(true);
+        break;
+      case 4: // Set up positions and roles
+        setShowPositionsModal(true);
+        break;
+      default:
+        setShowOnboarding(true);
+    }
+  };
+  
+  const markTaskCompleted = (taskId: number) => {
+    setSetupTasks(setupTasks.map(task => 
+      task.id === taskId ? { ...task, completed: true } : task
+    ));
+  };
+
+  const handleCompleteCompanyProfile = () => {
+    markTaskCompleted(1);
+    setShowCompanyProfileModal(false);
+    addNotification({
+      title: "Company profile updated",
+      message: "Your company profile has been saved successfully.",
+      type: "success",
+    });
+  };
+
+  const handleInviteTeamMembers = () => {
+    markTaskCompleted(2);
+    setShowInviteModal(false);
+    addNotification({
+      title: "Team invitations sent",
+      message: "Invitations have been sent to your team members.",
+      type: "success",
+    });
+  };
+
+  const handleCreateSchedule = (data: any) => {
+    markTaskCompleted(3);
+    setShowScheduleModal(false);
+    
+    setTimeout(() => {
+      navigate("/schedule");
+    }, 1000);
+  };
+
+  const handleSetupPositions = () => {
+    markTaskCompleted(4);
+    setShowPositionsModal(false);
+    addNotification({
+      title: "Positions and roles configured",
+      message: "Your positions and roles have been set up successfully.",
       type: "success",
     });
   };
@@ -59,43 +143,6 @@ const Index = () => {
       component: <ScheduleTemplateStep />,
     },
   ];
-  
-  const setupTasks = [
-    { id: 1, title: "Complete company profile", completed: false },
-    { id: 2, title: "Invite team members", completed: false },
-    { id: 3, title: "Create your first schedule", completed: false },
-    { id: 4, title: "Set up positions and roles", completed: false },
-    { id: 5, title: "Configure notification preferences", completed: false },
-  ];
-  
-  const completedTasks = setupTasks.filter(task => task.completed).length;
-  const setupProgress = (completedTasks / setupTasks.length) * 100;
-  
-  const quickStats = [
-    { title: "Team Members", value: "0", icon: Users, color: "bg-blue-500" },
-    { title: "Published Shifts", value: "0", icon: Calendar, color: "bg-green-500" },
-    { title: "Open Shifts", value: "0", icon: ClipboardList, color: "bg-yellow-500" },
-    { title: "Unread Messages", value: "0", icon: MessageSquare, color: "bg-purple-500" },
-  ];
-
-  const handleStartFlow = (taskId: number) => {
-    switch (taskId) {
-      case 1: // Complete company profile
-        setShowCompanyProfileModal(true);
-        break;
-      case 2: // Invite team members
-        setShowInviteModal(true);
-        break;
-      case 3: // Create your first schedule
-        setShowScheduleModal(true);
-        break;
-      case 4: // Set up positions and roles
-        setShowPositionsModal(true);
-        break;
-      default:
-        setShowOnboarding(true);
-    }
-  };
   
   return (
     <AppLayout>
@@ -261,21 +308,24 @@ const Index = () => {
       {showInviteModal && (
         <InviteModal 
           isOpen={showInviteModal} 
-          onClose={() => setShowInviteModal(false)} 
+          onClose={() => setShowInviteModal(false)}
+          onInvite={handleInviteTeamMembers}
         />
       )}
 
       {showScheduleModal && (
         <CreateScheduleModal 
           isOpen={showScheduleModal} 
-          onClose={() => setShowScheduleModal(false)} 
+          onClose={() => setShowScheduleModal(false)}
+          onCreateSchedule={handleCreateSchedule}
         />
       )}
 
       {showPositionsModal && (
         <PositionsRolesModal 
           isOpen={showPositionsModal} 
-          onClose={() => setShowPositionsModal(false)} 
+          onClose={() => setShowPositionsModal(false)}
+          onSave={handleSetupPositions}
         />
       )}
 
@@ -283,6 +333,7 @@ const Index = () => {
         <CompanyProfileModal
           isOpen={showCompanyProfileModal}
           onClose={() => setShowCompanyProfileModal(false)}
+          onSave={handleCompleteCompanyProfile}
         />
       )}
     </AppLayout>

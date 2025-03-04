@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -15,9 +14,10 @@ import { cn } from "@/lib/utils";
 interface CreateScheduleModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onCreateSchedule?: (data: any) => void;
 }
 
-export const CreateScheduleModal = ({ isOpen, onClose }: CreateScheduleModalProps) => {
+export const CreateScheduleModal = ({ isOpen, onClose, onCreateSchedule }: CreateScheduleModalProps) => {
   const [scheduleName, setScheduleName] = useState("Weekly Schedule");
   const [startDate, setStartDate] = useState<Date>(new Date());
   const [endDate, setEndDate] = useState<Date>(addDays(new Date(), 6));
@@ -33,6 +33,13 @@ export const CreateScheduleModal = ({ isOpen, onClose }: CreateScheduleModalProp
       setIsCreating(false);
       setIsSuccess(true);
       
+      const scheduleData = {
+        scheduleName,
+        startDate,
+        endDate,
+        scheduleType
+      };
+      
       toast({
         title: "Schedule created!",
         description: `${scheduleName} has been created and is ready for you to add shifts.`,
@@ -40,7 +47,11 @@ export const CreateScheduleModal = ({ isOpen, onClose }: CreateScheduleModalProp
       });
       
       setTimeout(() => {
-        onClose();
+        if (onCreateSchedule) {
+          onCreateSchedule(scheduleData);
+        } else {
+          onClose();
+        }
       }, 1500);
     }, 1500);
   };
