@@ -1,5 +1,4 @@
-
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,6 +9,7 @@ import { ScheduleTemplateStep } from "@/components/onboarding/steps/ScheduleTemp
 import { Avatar } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
+import { useNotifications } from "@/contexts/NotificationContext";
 import { 
   ArrowRight, 
   Calendar, 
@@ -24,6 +24,7 @@ import {
 const Index = () => {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const { toast } = useToast();
+  const { addNotification } = useNotifications();
   
   const handleCompleteOnboarding = () => {
     setShowOnboarding(false);
@@ -34,7 +35,6 @@ const Index = () => {
     });
   };
   
-  // Define onboarding steps
   const onboardingSteps = [
     {
       title: "Company Setup",
@@ -53,7 +53,6 @@ const Index = () => {
     },
   ];
   
-  // Mock data for the dashboard
   const setupTasks = [
     { id: 1, title: "Complete company profile", completed: true },
     { id: 2, title: "Invite team members", completed: true },
@@ -71,6 +70,39 @@ const Index = () => {
     { title: "Open Shifts", value: "3", icon: ClipboardList, color: "bg-yellow-500" },
     { title: "Unread Messages", value: "2", icon: MessageSquare, color: "bg-purple-500" },
   ];
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      if (!setupTasks[2].completed) {
+        addNotification({
+          title: "Create your first schedule",
+          message: "Your team is waiting for their schedule. Create your first schedule to keep everyone informed.",
+          type: "warning",
+          actionText: "Create Schedule",
+          actionFn: () => {
+            toast({
+              title: "Opening schedule creator",
+              description: "You're on your way to creating your first schedule!",
+            });
+          },
+          dismissible: true,
+        });
+      }
+      
+      if (completedTasks < 2) {
+        addNotification({
+          title: "Complete your onboarding",
+          message: "Finish setting up your account to get the most out of Shiftly.",
+          type: "info",
+          actionText: "Continue Setup",
+          actionFn: () => setShowOnboarding(true),
+          dismissible: true,
+        });
+      }
+    }, 1000);
+    
+    return () => clearTimeout(timeout);
+  }, [addNotification, completedTasks]);
   
   return (
     <AppLayout>
@@ -91,7 +123,6 @@ const Index = () => {
           </Button>
         </div>
         
-        {/* Setup Progress Card */}
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-xl">Getting Started</CardTitle>
@@ -147,7 +178,6 @@ const Index = () => {
           </CardContent>
         </Card>
         
-        {/* Quick Stats */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {quickStats.map((stat, index) => (
             <Card key={index} className="overflow-hidden">
@@ -169,16 +199,13 @@ const Index = () => {
           ))}
         </div>
         
-        {/* Recent Activity and Quick Actions */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Recent Activity */}
           <Card className="lg:col-span-2">
             <CardHeader>
               <CardTitle className="text-xl">Recent Activity</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-8">
-                {/* Activity items */}
                 <div className="flex gap-4">
                   <Avatar>
                     <div className="bg-green-100 dark:bg-green-900 h-full w-full flex items-center justify-center">
@@ -229,7 +256,6 @@ const Index = () => {
             </CardContent>
           </Card>
           
-          {/* Quick Actions */}
           <Card>
             <CardHeader>
               <CardTitle className="text-xl">Quick Actions</CardTitle>
@@ -256,7 +282,6 @@ const Index = () => {
         </div>
       </div>
       
-      {/* Onboarding Wizard */}
       {showOnboarding && (
         <OnboardingWizard
           steps={onboardingSteps}
