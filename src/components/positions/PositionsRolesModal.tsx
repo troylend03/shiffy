@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 interface PositionsRolesModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onSubmit?: () => void;
 }
 
 interface Position {
@@ -20,7 +21,7 @@ interface Position {
   color: string;
 }
 
-export const PositionsRolesModal = ({ isOpen, onClose }: PositionsRolesModalProps) => {
+export const PositionsRolesModal = ({ isOpen, onClose, onSubmit }: PositionsRolesModalProps) => {
   const [activeTab, setActiveTab] = useState("positions");
   const [newPositionName, setNewPositionName] = useState("");
   const [newPositionColor, setNewPositionColor] = useState("#3b82f6"); // Default blue
@@ -77,7 +78,11 @@ export const PositionsRolesModal = ({ isOpen, onClose }: PositionsRolesModalProp
       });
       
       setTimeout(() => {
-        onClose();
+        if (onSubmit) {
+          onSubmit();
+        } else {
+          onClose();
+        }
       }, 1500);
     }, 1500);
   };

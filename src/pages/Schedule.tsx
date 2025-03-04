@@ -149,11 +149,11 @@ const Schedule = () => {
             {scheduleCreated ? (
               <div>
                 <ScheduleHeader 
-                  currentDate={startDate} 
+                  date={startDate} 
                   viewType={currentView} 
                 />
                 <ScheduleGrid 
-                  currentDate={startDate} 
+                  startDate={startDate} 
                   viewType={currentView} 
                   onCreateShift={handleCreateShift}
                 />
