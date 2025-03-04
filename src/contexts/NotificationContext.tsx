@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useReducer, useEffect } from "react";
+import React, { createContext, useContext, useReducer } from "react";
 import { toast } from "sonner";
 
 export type NotificationType = "info" | "warning" | "success" | "error";

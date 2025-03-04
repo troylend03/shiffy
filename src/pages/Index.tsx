@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+
+import React, { useState } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,11 +19,18 @@ import {
   Users, 
   BarChart4,
   MessageSquare,
-  ClipboardList
+  ClipboardList,
+  Briefcase
 } from "lucide-react";
+import { InviteModal } from "@/components/team/InviteModal";
+import { CreateScheduleModal } from "@/components/schedule/CreateScheduleModal";
+import { PositionsRolesModal } from "@/components/positions/PositionsRolesModal";
 
 const Index = () => {
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [showInviteModal, setShowInviteModal] = useState(false);
+  const [showScheduleModal, setShowScheduleModal] = useState(false);
+  const [showPositionsModal, setShowPositionsModal] = useState(false);
   const { toast } = useToast();
   const { addNotification } = useNotifications();
   
@@ -71,38 +79,21 @@ const Index = () => {
     { title: "Unread Messages", value: "2", icon: MessageSquare, color: "bg-purple-500" },
   ];
 
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      if (!setupTasks[2].completed) {
-        addNotification({
-          title: "Create your first schedule",
-          message: "Your team is waiting for their schedule. Create your first schedule to keep everyone informed.",
-          type: "warning",
-          actionText: "Create Schedule",
-          actionFn: () => {
-            toast({
-              title: "Opening schedule creator",
-              description: "You're on your way to creating your first schedule!",
-            });
-          },
-          dismissible: true,
-        });
-      }
-      
-      if (completedTasks < 2) {
-        addNotification({
-          title: "Complete your onboarding",
-          message: "Finish setting up your account to get the most out of Shiftly.",
-          type: "info",
-          actionText: "Continue Setup",
-          actionFn: () => setShowOnboarding(true),
-          dismissible: true,
-        });
-      }
-    }, 1000);
-    
-    return () => clearTimeout(timeout);
-  }, [addNotification, completedTasks]);
+  const handleStartFlow = (taskId: number) => {
+    switch (taskId) {
+      case 2: // Invite team members
+        setShowInviteModal(true);
+        break;
+      case 3: // Create your first schedule
+        setShowScheduleModal(true);
+        break;
+      case 4: // Set up positions and roles
+        setShowPositionsModal(true);
+        break;
+      default:
+        setShowOnboarding(true);
+    }
+  };
   
   return (
     <AppLayout>
@@ -167,7 +158,12 @@ const Index = () => {
                       </p>
                     </div>
                     {!task.completed && (
-                      <Button size="sm" variant="ghost" className="text-shiftly-blue">
+                      <Button 
+                        size="sm" 
+                        variant="ghost" 
+                        className="text-shiftly-blue"
+                        onClick={() => handleStartFlow(task.id)}
+                      >
                         Start
                       </Button>
                     )}
@@ -287,6 +283,27 @@ const Index = () => {
           steps={onboardingSteps}
           onComplete={handleCompleteOnboarding}
           onCancel={() => setShowOnboarding(false)}
+        />
+      )}
+
+      {showInviteModal && (
+        <InviteModal 
+          isOpen={showInviteModal} 
+          onClose={() => setShowInviteModal(false)} 
+        />
+      )}
+
+      {showScheduleModal && (
+        <CreateScheduleModal 
+          isOpen={showScheduleModal} 
+          onClose={() => setShowScheduleModal(false)} 
+        />
+      )}
+
+      {showPositionsModal && (
+        <PositionsRolesModal 
+          isOpen={showPositionsModal} 
+          onClose={() => setShowPositionsModal(false)} 
         />
       )}
     </AppLayout>
