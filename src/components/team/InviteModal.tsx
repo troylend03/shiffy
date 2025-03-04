@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Mail, Upload, Plus, Trash2, X, Send, CheckCircle } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { useNotifications } from "@/contexts/NotificationContext";
 
 interface InviteModalProps {
   isOpen: boolean;
@@ -25,7 +25,7 @@ export const InviteModal = ({ isOpen, onClose }: InviteModalProps) => {
   const [bulkRole, setBulkRole] = useState("employee");
   const [isSending, setIsSending] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
-  const { toast } = useToast();
+  const { addNotification } = useNotifications();
   
   const roles = [
     { id: "employee", name: "Employee" },
@@ -71,10 +71,10 @@ export const InviteModal = ({ isOpen, onClose }: InviteModalProps) => {
         ? invites.filter(inv => inv.email.trim()).length 
         : extractEmails().length;
       
-      toast({
+      addNotification({
         title: "Invitations sent!",
-        description: `${count} team members have been invited to join your team.`,
-        variant: "default",
+        message: `${count} team members have been invited to join your team.`,
+        type: "success",
       });
       
       setTimeout(() => {

@@ -9,7 +9,6 @@ import { InviteTeamStep } from "@/components/onboarding/steps/InviteTeamStep";
 import { ScheduleTemplateStep } from "@/components/onboarding/steps/ScheduleTemplateStep";
 import { Avatar } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
-import { useToast } from "@/hooks/use-toast";
 import { useNotifications } from "@/contexts/NotificationContext";
 import { 
   ArrowRight, 
@@ -31,15 +30,14 @@ const Index = () => {
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [showPositionsModal, setShowPositionsModal] = useState(false);
-  const { toast } = useToast();
   const { addNotification } = useNotifications();
   
   const handleCompleteOnboarding = () => {
     setShowOnboarding(false);
-    toast({
+    addNotification({
       title: "Onboarding complete!",
-      description: "You're all set to start using Shiftly.",
-      variant: "default",
+      message: "You're all set to start using Shiftly.",
+      type: "success",
     });
   };
   
@@ -257,11 +255,18 @@ const Index = () => {
               <CardTitle className="text-xl">Quick Actions</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
-              <Button className="w-full justify-start bg-shiftly-blue hover:bg-shiftly-blue/90">
+              <Button 
+                className="w-full justify-start bg-shiftly-blue hover:bg-shiftly-blue/90"
+                onClick={() => setShowScheduleModal(true)}
+              >
                 <Calendar size={16} className="mr-2" />
                 Create New Schedule
               </Button>
-              <Button variant="outline" className="w-full justify-start">
+              <Button 
+                variant="outline" 
+                className="w-full justify-start"
+                onClick={() => setShowInviteModal(true)}
+              >
                 <Users size={16} className="mr-2" />
                 Invite Team Members
               </Button>
