@@ -1,388 +1,339 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { OnboardingWizard } from "@/components/onboarding/OnboardingWizard";
+import { CompanySetupStep } from "@/components/onboarding/steps/CompanySetupStep";
+import { InviteTeamStep } from "@/components/onboarding/steps/InviteTeamStep";
+import { ScheduleTemplateStep } from "@/components/onboarding/steps/ScheduleTemplateStep";
 import { Avatar } from "@/components/ui/avatar";
-import { Calendar, Clock, DollarSign, Users, Bell, Settings, ChevronRight, Plus } from "lucide-react";
-import { InviteModal } from "@/components/dashboard/InviteModal";
-import { CompanyProfileModal } from "@/components/dashboard/CompanyProfileModal";
+import { Progress } from "@/components/ui/progress";
+import { useNotifications } from "@/contexts/NotificationContext";
+import { 
+  ArrowRight, 
+  Calendar, 
+  CheckCircle2, 
+  Mail, 
+  Users, 
+  BarChart4,
+  MessageSquare,
+  ClipboardList,
+  Briefcase
+} from "lucide-react";
+import { InviteModal } from "@/components/team/InviteModal";
+import { CreateScheduleModal } from "@/components/schedule/CreateScheduleModal";
+import { PositionsRolesModal } from "@/components/positions/PositionsRolesModal";
+import { CompanyProfileModal } from "@/components/company/CompanyProfileModal";
+import { useNavigate } from "react-router-dom";
 
 const Index = () => {
+  const [showOnboarding, setShowOnboarding] = useState(false);
   const [showInviteModal, setShowInviteModal] = useState(false);
-  const [showCompanyModal, setShowCompanyModal] = useState(false);
+  const [showScheduleModal, setShowScheduleModal] = useState(false);
+  const [showPositionsModal, setShowPositionsModal] = useState(false);
+  const [showCompanyProfileModal, setShowCompanyProfileModal] = useState(false);
+  const { addNotification } = useNotifications();
+  const navigate = useNavigate();
+  
+  const [setupTasks, setSetupTasks] = useState([
+    { id: 1, title: "Complete company profile", completed: false },
+    { id: 2, title: "Invite team members", completed: false },
+    { id: 3, title: "Create your first schedule", completed: false },
+    { id: 4, title: "Set up positions and roles", completed: false },
+    { id: 5, title: "Configure notification preferences", completed: false },
+  ]);
+  
+  const completedTasks = setupTasks.filter(task => task.completed).length;
+  const setupProgress = (completedTasks / setupTasks.length) * 100;
+  
+  const quickStats = [
+    { title: "Team Members", value: "0", icon: Users, color: "bg-blue-500" },
+    { title: "Published Shifts", value: "0", icon: Calendar, color: "bg-green-500" },
+    { title: "Open Shifts", value: "0", icon: ClipboardList, color: "bg-yellow-500" },
+    { title: "Unread Messages", value: "0", icon: MessageSquare, color: "bg-purple-500" },
+  ];
 
+  const handleCompleteOnboarding = () => {
+    setShowOnboarding(false);
+    addNotification({
+      title: "Onboarding complete!",
+      message: "You're all set to start using Shiftly.",
+      type: "success",
+    });
+  };
+
+  const handleStartFlow = (taskId: number) => {
+    switch (taskId) {
+      case 1: // Complete company profile
+        setShowCompanyProfileModal(true);
+        break;
+      case 2: // Invite team members
+        setShowInviteModal(true);
+        break;
+      case 3: // Create your first schedule
+        setShowScheduleModal(true);
+        break;
+      case 4: // Set up positions and roles
+        setShowPositionsModal(true);
+        break;
+      default:
+        setShowOnboarding(true);
+    }
+  };
+  
+  const markTaskCompleted = (taskId: number) => {
+    setSetupTasks(setupTasks.map(task => 
+      task.id === taskId ? { ...task, completed: true } : task
+    ));
+  };
+
+  const handleCompleteCompanyProfile = () => {
+    markTaskCompleted(1);
+    setShowCompanyProfileModal(false);
+    addNotification({
+      title: "Company profile updated",
+      message: "Your company profile has been saved successfully.",
+      type: "success",
+    });
+  };
+
+  const handleInviteTeamMembers = () => {
+    markTaskCompleted(2);
+    setShowInviteModal(false);
+    addNotification({
+      title: "Team invitations sent",
+      message: "Invitations have been sent to your team members.",
+      type: "success",
+    });
+  };
+
+  const handleCreateSchedule = (data: any) => {
+    markTaskCompleted(3);
+    setShowScheduleModal(false);
+    
+    setTimeout(() => {
+      navigate("/schedule");
+    }, 1000);
+  };
+
+  const handleSetupPositions = () => {
+    markTaskCompleted(4);
+    setShowPositionsModal(false);
+    addNotification({
+      title: "Positions and roles configured",
+      message: "Your positions and roles have been set up successfully.",
+      type: "success",
+    });
+  };
+  
+  const onboardingSteps = [
+    {
+      title: "Company Setup",
+      description: "Tell us about your business to customize your experience.",
+      component: <CompanySetupStep />,
+    },
+    {
+      title: "Invite Your Team",
+      description: "Add team members so they can view and manage their schedules.",
+      component: <InviteTeamStep />,
+    },
+    {
+      title: "Create Schedule Template",
+      description: "Set up your default schedule to save time each week.",
+      component: <ScheduleTemplateStep />,
+    },
+  ];
+  
   return (
     <AppLayout>
-      <div className="container py-8">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-          <h1 className="text-3xl font-bold">Dashboard</h1>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={() => setShowInviteModal(true)}>
-              <Users className="mr-2 h-4 w-4" />
-              Invite Team
-            </Button>
-            <Button onClick={() => setShowCompanyModal(true)}>
-              <Plus className="mr-2 h-4 w-4" />
-              New Schedule
-            </Button>
+      <div className="space-y-8">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Welcome to Shiftly</h1>
+            <p className="text-lg text-gray-500 dark:text-gray-400 mt-1">
+              Your all-in-one scheduling solution
+            </p>
           </div>
+          <Button 
+            className="bg-shiftly-blue hover:bg-shiftly-blue/90"
+            onClick={() => setShowOnboarding(true)}
+          >
+            <CheckCircle2 size={16} className="mr-2" />
+            Complete Setup
+          </Button>
         </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Scheduled Hours</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">142.5</div>
-              <p className="text-xs text-muted-foreground mt-1">
-                <span className="text-green-500 font-medium">↑ 12%</span> from last week
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Labor Cost</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">$2,845.00</div>
-              <p className="text-xs text-muted-foreground mt-1">
-                <span className="text-red-500 font-medium">↑ 8%</span> from last week
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Open Shifts</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">3</div>
-              <p className="text-xs text-muted-foreground mt-1">
-                <span className="text-yellow-500 font-medium">⚠ Action needed</span>
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-
-        <Tabs defaultValue="upcoming" className="mb-8">
-          <TabsList className="mb-4">
-            <TabsTrigger value="upcoming">Upcoming Shifts</TabsTrigger>
-            <TabsTrigger value="requests">Requests</TabsTrigger>
-            <TabsTrigger value="announcements">Announcements</TabsTrigger>
-          </TabsList>
-          <TabsContent value="upcoming">
-            <Card>
-              <CardHeader>
-                <CardTitle>Today's Schedule</CardTitle>
-                <CardDescription>
-                  Monday, June 12, 2023
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <Avatar className="h-10 w-10">
-                        <div className="bg-blue-100 dark:bg-blue-900 h-full w-full flex items-center justify-center">
-                          <span className="text-xs font-medium text-blue-600 dark:text-blue-300">JD</span>
-                        </div>
-                      </Avatar>
-                      <div>
-                        <div className="font-medium">John Doe</div>
-                        <div className="text-sm text-gray-500 dark:text-gray-400">Cashier</div>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="font-medium">9:00 AM - 5:00 PM</div>
-                      <div className="text-sm text-gray-500 dark:text-gray-400">8h</div>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <Avatar className="h-10 w-10">
-                        <div className="bg-green-100 dark:bg-green-900 h-full w-full flex items-center justify-center">
-                          <span className="text-xs font-medium text-green-600 dark:text-green-300">JS</span>
-                        </div>
-                      </Avatar>
-                      <div>
-                        <div className="font-medium">Jane Smith</div>
-                        <div className="text-sm text-gray-500 dark:text-gray-400">Manager</div>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="font-medium">12:00 PM - 8:00 PM</div>
-                      <div className="text-sm text-gray-500 dark:text-gray-400">8h</div>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <Avatar className="h-10 w-10">
-                        <div className="bg-purple-100 dark:bg-purple-900 h-full w-full flex items-center justify-center">
-                          <span className="text-xs font-medium text-purple-600 dark:text-purple-300">MJ</span>
-                        </div>
-                      </Avatar>
-                      <div>
-                        <div className="font-medium">Mike Johnson</div>
-                        <div className="text-sm text-gray-500 dark:text-gray-400">Stocker</div>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="font-medium">4:00 PM - 10:00 PM</div>
-                      <div className="text-sm text-gray-500 dark:text-gray-400">6h</div>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-              <CardFooter>
-                <Button variant="outline" className="w-full">
-                  <Calendar className="mr-2 h-4 w-4" />
-                  View Full Schedule
-                </Button>
-              </CardFooter>
-            </Card>
-          </TabsContent>
-          
-          <TabsContent value="requests">
-            <Card>
-              <CardHeader>
-                <CardTitle>Pending Requests</CardTitle>
-                <CardDescription>
-                  Time off and shift swap requests
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <Avatar className="h-10 w-10">
-                        <div className="bg-green-100 dark:bg-green-900 h-full w-full flex items-center justify-center">
-                          <span className="text-xs font-medium text-green-600 dark:text-green-300">JS</span>
-                        </div>
-                      </Avatar>
-                      <div>
-                        <div className="font-medium">Jane Smith</div>
-                        <div className="flex items-center text-sm">
-                          <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-300 dark:border-yellow-800">
-                            Time Off
-                          </Badge>
-                          <span className="ml-2 text-gray-500 dark:text-gray-400">Jun 15 - Jun 20</span>
-                        </div>
-                      </div>
-                    </div>
-                    <Button size="sm">Review</Button>
-                  </div>
-                  
-                  <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <Avatar className="h-10 w-10">
-                        <div className="bg-purple-100 dark:bg-purple-900 h-full w-full flex items-center justify-center">
-                          <span className="text-xs font-medium text-purple-600 dark:text-purple-300">MJ</span>
-                        </div>
-                      </Avatar>
-                      <div>
-                        <div className="font-medium">Mike Johnson</div>
-                        <div className="flex items-center text-sm">
-                          <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-800">
-                            Shift Swap
-                          </Badge>
-                          <span className="ml-2 text-gray-500 dark:text-gray-400">Jun 14 with Alex</span>
-                        </div>
-                      </div>
-                    </div>
-                    <Button size="sm">Review</Button>
-                  </div>
-                </div>
-              </CardContent>
-              <CardFooter>
-                <Button variant="outline" className="w-full">
-                  <Clock className="mr-2 h-4 w-4" />
-                  View All Requests
-                </Button>
-              </CardFooter>
-            </Card>
-          </TabsContent>
-          
-          <TabsContent value="announcements">
-            <Card>
-              <CardHeader>
-                <CardTitle>Recent Announcements</CardTitle>
-                <CardDescription>
-                  Updates from management
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="font-medium">New Schedule Published</div>
-                      <Badge variant="outline">New</Badge>
-                    </div>
-                    <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">
-                      The schedule for next week (Jun 19 - Jun 25) has been published. Please review your shifts.
-                    </p>
-                    <div className="text-xs text-gray-500 dark:text-gray-400">
-                      Posted 2 hours ago by Admin
-                    </div>
-                  </div>
-                  
-                  <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="font-medium">Inventory Day</div>
-                      <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-800">
-                        Important
-                      </Badge>
-                    </div>
-                    <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">
-                      We will be conducting inventory on Sunday, June 18. All hands on deck required.
-                    </p>
-                    <div className="text-xs text-gray-500 dark:text-gray-400">
-                      Posted 1 day ago by Manager
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-              <CardFooter>
-                <Button variant="outline" className="w-full">
-                  <Bell className="mr-2 h-4 w-4" />
-                  View All Announcements
-                </Button>
-              </CardFooter>
-            </Card>
-          </TabsContent>
-        </Tabs>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-xl">Getting Started</CardTitle>
+            <CardDescription>
+              Complete these tasks to get the most out of Shiftly
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-6">
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span>Setup progress</span>
+                  <span className="font-medium">
+                    {completedTasks}/{setupTasks.length} tasks
+                  </span>
+                </div>
+                <Progress value={setupProgress} className="h-2" />
+              </div>
+              
+              <div className="space-y-3">
+                {setupTasks.map((task) => (
+                  <div 
+                    key={task.id} 
+                    className="flex items-center p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                  >
+                    <div 
+                      className={`h-8 w-8 rounded-full flex items-center justify-center mr-4 ${
+                        task.completed 
+                          ? "bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400" 
+                          : "bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400"
+                      }`}
+                    >
+                      {task.completed ? (
+                        <CheckCircle2 size={16} />
+                      ) : (
+                        <ArrowRight size={16} />
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <p className={`font-medium ${task.completed ? "text-gray-500 dark:text-gray-400 line-through" : ""}`}>
+                        {task.title}
+                      </p>
+                    </div>
+                    {!task.completed && (
+                      <Button 
+                        size="sm" 
+                        variant="ghost" 
+                        className="text-shiftly-blue"
+                        onClick={() => handleStartFlow(task.id)}
+                      >
+                        Start
+                      </Button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {quickStats.map((stat, index) => (
+            <Card key={index} className="overflow-hidden">
+              <div className={`h-1 ${stat.color}`} />
+              <CardContent className="pt-6">
+                <div className="flex items-center gap-4">
+                  <div className={`rounded-full p-3 ${stat.color}/10`}>
+                    <stat.icon className={`h-6 w-6 ${stat.color} bg-clip-text text-transparent`} />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                      {stat.title}
+                    </p>
+                    <h3 className="text-2xl font-bold">{stat.value}</h3>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+        
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <Card className="lg:col-span-2">
             <CardHeader>
-              <CardTitle>Quick Actions</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <Button variant="outline" className="w-full justify-between">
-                <div className="flex items-center">
-                  <Calendar className="mr-2 h-4 w-4" />
-                  Create Schedule
-                </div>
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-              <Button variant="outline" className="w-full justify-between">
-                <div className="flex items-center">
-                  <Users className="mr-2 h-4 w-4" />
-                  Manage Team
-                </div>
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-              <Button variant="outline" className="w-full justify-between">
-                <div className="flex items-center">
-                  <DollarSign className="mr-2 h-4 w-4" />
-                  Payroll Report
-                </div>
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-              <Button variant="outline" className="w-full justify-between">
-                <div className="flex items-center">
-                  <Settings className="mr-2 h-4 w-4" />
-                  Settings
-                </div>
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader>
-              <CardTitle>Team Availability</CardTitle>
+              <CardTitle className="text-xl">Recent Activity</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Avatar className="h-8 w-8">
-                      <div className="bg-blue-100 dark:bg-blue-900 h-full w-full flex items-center justify-center">
-                        <span className="text-xs font-medium text-blue-600 dark:text-blue-300">JD</span>
-                      </div>
-                    </Avatar>
-                    <span>John Doe</span>
-                  </div>
-                  <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-800">
-                    Available
-                  </Badge>
-                </div>
-                
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Avatar className="h-8 w-8">
-                      <div className="bg-green-100 dark:bg-green-900 h-full w-full flex items-center justify-center">
-                        <span className="text-xs font-medium text-green-600 dark:text-green-300">JS</span>
-                      </div>
-                    </Avatar>
-                    <span>Jane Smith</span>
-                  </div>
-                  <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200 dark:bg-red-900/20 dark:text-red-300 dark:border-red-800">
-                    Time Off
-                  </Badge>
-                </div>
-                
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Avatar className="h-8 w-8">
-                      <div className="bg-purple-100 dark:bg-purple-900 h-full w-full flex items-center justify-center">
-                        <span className="text-xs font-medium text-purple-600 dark:text-purple-300">MJ</span>
-                      </div>
-                    </Avatar>
-                    <span>Mike Johnson</span>
-                  </div>
-                  <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-300 dark:border-yellow-800">
-                    Limited
-                  </Badge>
-                </div>
-                
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Avatar className="h-8 w-8">
-                      <div className="bg-orange-100 dark:bg-orange-900 h-full w-full flex items-center justify-center">
-                        <span className="text-xs font-medium text-orange-600 dark:text-orange-300">SW</span>
-                      </div>
-                    </Avatar>
-                    <span>Sarah Wilson</span>
-                  </div>
-                  <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-800">
-                    Available
-                  </Badge>
-                </div>
+              <div className="flex items-center justify-center h-40 text-gray-500">
+                Complete setup tasks to see activity here
               </div>
             </CardContent>
-            <CardFooter>
-              <Button variant="outline" className="w-full">
-                <Users className="mr-2 h-4 w-4" />
-                View All Team Members
+          </Card>
+          
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-xl">Quick Actions</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              <Button 
+                className="w-full justify-start bg-shiftly-blue hover:bg-shiftly-blue/90"
+                onClick={() => setShowScheduleModal(true)}
+              >
+                <Calendar size={16} className="mr-2" />
+                Create New Schedule
               </Button>
-            </CardFooter>
+              <Button 
+                variant="outline" 
+                className="w-full justify-start"
+                onClick={() => setShowInviteModal(true)}
+              >
+                <Users size={16} className="mr-2" />
+                Invite Team Members
+              </Button>
+              <Button 
+                variant="outline" 
+                className="w-full justify-start"
+                onClick={() => setShowCompanyProfileModal(true)}
+              >
+                <Briefcase size={16} className="mr-2" />
+                Edit Company Profile
+              </Button>
+              <Button variant="outline" className="w-full justify-start">
+                <Mail size={16} className="mr-2" />
+                Send Announcements
+              </Button>
+              <Button variant="outline" className="w-full justify-start">
+                <BarChart4 size={16} className="mr-2" />
+                View Reports
+              </Button>
+            </CardContent>
           </Card>
         </div>
       </div>
       
-      {/* Modals */}
+      {showOnboarding && (
+        <OnboardingWizard
+          steps={onboardingSteps}
+          onComplete={handleCompleteOnboarding}
+          onCancel={() => setShowOnboarding(false)}
+        />
+      )}
+
       {showInviteModal && (
         <InviteModal 
           isOpen={showInviteModal} 
-          onClose={() => {
-            setShowInviteModal(false);
-            // Handle any post-invite logic here
-          }} 
+          onClose={() => setShowInviteModal(false)}
+          onInvite={handleInviteTeamMembers}
         />
       )}
-      
-      {showCompanyModal && (
-        <CompanyProfileModal 
-          isOpen={showCompanyModal} 
-          onClose={() => {
-            setShowCompanyModal(false);
-            // Handle any post-save logic here
-          }} 
+
+      {showScheduleModal && (
+        <CreateScheduleModal 
+          isOpen={showScheduleModal} 
+          onClose={() => setShowScheduleModal(false)}
+          onCreateSchedule={handleCreateSchedule}
+        />
+      )}
+
+      {showPositionsModal && (
+        <PositionsRolesModal 
+          isOpen={showPositionsModal} 
+          onClose={() => setShowPositionsModal(false)}
+          onSubmit={handleSetupPositions}
+        />
+      )}
+
+      {showCompanyProfileModal && (
+        <CompanyProfileModal
+          isOpen={showCompanyProfileModal}
+          onClose={() => setShowCompanyProfileModal(false)}
+          onSave={handleCompleteCompanyProfile}
         />
       )}
     </AppLayout>
