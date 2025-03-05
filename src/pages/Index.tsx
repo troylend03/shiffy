@@ -6,7 +6,6 @@ import { OnboardingWizard } from "@/components/onboarding/OnboardingWizard";
 import { CompanySetupStep } from "@/components/onboarding/steps/CompanySetupStep";
 import { InviteTeamStep } from "@/components/onboarding/steps/InviteTeamStep";
 import { ScheduleTemplateStep } from "@/components/onboarding/steps/ScheduleTemplateStep";
-import { Avatar } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
 import { useNotifications } from "@/contexts/NotificationContext";
 import { 
@@ -21,15 +20,13 @@ import {
   Briefcase,
   HelpCircle
 } from "lucide-react";
-import { InviteModal } from "@/components/team/InviteModal";
-import { CreateScheduleModal } from "@/components/schedule/CreateScheduleModal";
-import { PositionsRolesModal } from "@/components/positions/PositionsRolesModal";
-import { CompanyProfileModal } from "@/components/company/CompanyProfileModal";
-import { useNavigate } from "react-router-dom";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { RecentActivity } from "@/components/dashboard/RecentActivity";
 import { generateMockActivities } from "@/utils/activityData";
 import type { ActivityItem } from "@/components/dashboard/ActivityItem";
+import { DashboardStats } from "@/components/dashboard/DashboardStats";
+import { generateDashboardStats } from "@/utils/dashboardData";
+import { useNavigate } from "react-router-dom";
 
 const Index = () => {
   const [showOnboarding, setShowOnboarding] = useState(false);
@@ -51,13 +48,6 @@ const Index = () => {
   const completedTasks = setupTasks.filter(task => task.completed).length;
   const setupProgress = (completedTasks / setupTasks.length) * 100;
   
-  const quickStats = [
-    { title: "Team Members", value: "0", icon: Users, color: "bg-blue-500" },
-    { title: "Published Shifts", value: "0", icon: Calendar, color: "bg-green-500" },
-    { title: "Open Shifts", value: "0", icon: ClipboardList, color: "bg-yellow-500" },
-    { title: "Unread Messages", value: "0", icon: MessageSquare, color: "bg-purple-500" },
-  ];
-
   const [isFirstTimeUser, setIsFirstTimeUser] = useState(true);
   const [currentTip, setCurrentTip] = useState(0);
   const [showTips, setShowTips] = useState(true);
@@ -199,9 +189,11 @@ const Index = () => {
   ];
   
   const [activities, setActivities] = useState<ActivityItem[]>([]);
+  const [dashboardStats, setDashboardStats] = useState(generateDashboardStats());
 
   useEffect(() => {
     setActivities(generateMockActivities(8));
+    setDashboardStats(generateDashboardStats());
   }, []);
 
   return (
@@ -259,110 +251,73 @@ const Index = () => {
             )}
           </div>
           
-          <Card id="setup-tasks">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-xl">Getting Started</CardTitle>
-              <CardDescription>
-                Complete these tasks to get the most out of Shiftly
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-6">
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span>Setup progress</span>
-                    <span className="font-medium">
-                      {completedTasks}/{setupTasks.length} tasks
-                    </span>
-                  </div>
-                  <Progress value={setupProgress} className="h-2" />
-                </div>
-                
-                <div className="space-y-3">
-                  {setupTasks.map((task) => (
-                    <div 
-                      key={task.id} 
-                      className="flex items-center p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-                    >
-                      <div 
-                        className={`h-8 w-8 rounded-full flex items-center justify-center mr-4 ${
-                          task.completed 
-                            ? "bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400" 
-                            : "bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400"
-                        }`}
-                      >
-                        {task.completed ? (
-                          <CheckCircle2 size={16} />
-                        ) : (
-                          <ArrowRight size={16} />
-                        )}
-                      </div>
-                      <div className="flex-1">
-                        <p className={`font-medium ${task.completed ? "text-gray-500 dark:text-gray-400 line-through" : ""}`}>
-                          {task.title}
-                        </p>
-                      </div>
-                      {!task.completed && (
-                        <Button 
-                          size="sm" 
-                          variant="ghost" 
-                          className="text-shiftly-blue"
-                          onClick={() => handleStartFlow(task.id)}
-                        >
-                          Start
-                        </Button>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <DashboardStats stats={dashboardStats} />
           
-          <div id="quick-stats" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 relative">
-            {quickStats.map((stat, index) => (
-              <Card key={index} className="overflow-hidden">
-                <div className={`h-1 ${stat.color}`} />
-                <CardContent className="pt-6">
-                  <div className="flex items-center gap-4">
-                    <div className={`rounded-full p-3 ${stat.color}/10`}>
-                      <stat.icon className={`h-6 w-6 ${stat.color} bg-clip-text text-transparent`} />
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2">
+              <Card id="setup-tasks">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-xl">Getting Started</CardTitle>
+                  <CardDescription>
+                    Complete these tasks to get the most out of Shiftly
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-6">
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span>Setup progress</span>
+                        <span className="font-medium">
+                          {completedTasks}/{setupTasks.length} tasks
+                        </span>
+                      </div>
+                      <Progress value={setupProgress} className="h-2" />
                     </div>
-                    <div>
-                      <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                        {stat.title}
-                      </p>
-                      <h3 className="text-2xl font-bold">{stat.value}</h3>
+                    
+                    <div className="space-y-3">
+                      {setupTasks.map((task) => (
+                        <div 
+                          key={task.id} 
+                          className="flex items-center p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                        >
+                          <div 
+                            className={`h-8 w-8 rounded-full flex items-center justify-center mr-4 ${
+                              task.completed 
+                                ? "bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400" 
+                                : "bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400"
+                            }`}
+                          >
+                            {task.completed ? (
+                              <CheckCircle2 size={16} />
+                            ) : (
+                              <ArrowRight size={16} />
+                            )}
+                          </div>
+                          <div className="flex-1">
+                            <p className={`font-medium ${task.completed ? "text-gray-500 dark:text-gray-400 line-through" : ""}`}>
+                              {task.title}
+                            </p>
+                          </div>
+                          {!task.completed && (
+                            <Button 
+                              size="sm" 
+                              variant="ghost" 
+                              className="text-shiftly-blue"
+                              onClick={() => handleStartFlow(task.id)}
+                            >
+                              Start
+                            </Button>
+                          )}
+                        </div>
+                      ))}
                     </div>
                   </div>
                 </CardContent>
               </Card>
-            ))}
             
-            {showTips && currentTip === 1 && (
-              <div className="absolute -top-10 left-0 right-0 bg-blue-50 dark:bg-blue-900/30 p-4 rounded-lg border border-blue-200 dark:border-blue-800 z-10 shadow-lg">
-                <h3 className="font-medium text-blue-800 dark:text-blue-300 flex items-center gap-2">
-                  <HelpCircle size={16} />
-                  {onboardingTips[currentTip].title}
-                </h3>
-                <p className="text-blue-600 dark:text-blue-400 mt-1">
-                  {onboardingTips[currentTip].description}
-                </p>
-                <div className="flex justify-between mt-3">
-                  <Button variant="outline" size="sm" onClick={skipTips}>
-                    Skip
-                  </Button>
-                  <Button size="sm" className="bg-blue-500 hover:bg-blue-600" onClick={nextTip}>
-                    Next
-                  </Button>
-                </div>
+              <div className="mt-6">
+                <RecentActivity activities={activities} />
               </div>
-            )}
-          </div>
-          
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2">
-              <RecentActivity activities={activities} />
             </div>
             
             <Card id="quick-actions">

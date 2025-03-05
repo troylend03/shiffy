@@ -2,7 +2,6 @@
 import React from "react";
 import { cn } from "@/lib/utils";
 import { Avatar } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { 
   AlertCircle, 
   ArrowDownRight, 
@@ -87,8 +86,8 @@ export const ScheduleGrid = ({
     { id: "3", name: "Mike Johnson", hours: 24, position: "Stocker" }
   ];
 
-  // Mock data for demo if shifts are empty
-  const displayShifts = shifts.length > 0 ? shifts : [
+  // Mock data for demo if shifts are empty - with proper typing for ShiftStatus
+  const mockShifts: Shift[] = [
     { 
       id: "shift1", 
       employeeId: "1", 
@@ -121,6 +120,9 @@ export const ScheduleGrid = ({
       conflict: true
     }
   ];
+
+  // Use provided shifts or mock shifts
+  const displayShifts = shifts.length > 0 ? shifts : mockShifts;
 
   // Helper function to get shifts for a specific employee and day
   const getShiftsForEmployeeAndDay = (employeeId: string, day: string) => {

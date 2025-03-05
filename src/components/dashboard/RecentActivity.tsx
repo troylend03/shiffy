@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ActivityItem, ActivityType, type ActivityItem as ActivityItemType } from "./ActivityItem";
+import { ActivityItem, type ActivityItem as ActivityItemType } from "./ActivityItem";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 
