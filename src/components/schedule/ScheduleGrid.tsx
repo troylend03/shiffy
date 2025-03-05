@@ -97,7 +97,7 @@ export const ScheduleGrid = ({
       endTime: "17:00", 
       position: "Cashier", 
       duration: "8h",
-      status: { type: "approved", label: "Approved" } 
+      status: { type: "approved" as const, label: "Approved" } 
     },
     { 
       id: "shift2", 
@@ -107,7 +107,7 @@ export const ScheduleGrid = ({
       endTime: "20:00", 
       position: "Manager", 
       duration: "8h",
-      status: { type: "pending", label: "Pending" } 
+      status: { type: "pending" as const, label: "Pending" } 
     },
     { 
       id: "shift3", 
@@ -117,7 +117,7 @@ export const ScheduleGrid = ({
       endTime: "18:00", 
       position: "Stocker", 
       duration: "8h",
-      status: { type: "posted", label: "Open" },
+      status: { type: "posted" as const, label: "Open" },
       conflict: true
     }
   ];
@@ -133,7 +133,7 @@ export const ScheduleGrid = ({
   const renderStatusBadge = (status?: ShiftStatus) => {
     if (!status) return null;
     
-    const statusMap = {
+    const statusMap: Record<ShiftStatus['type'], { icon: React.ElementType, className: string }> = {
       approved: { icon: Check, className: "text-green-600 dark:text-green-400" },
       denied: { icon: X, className: "text-red-600 dark:text-red-400" },
       pending: { icon: Clock, className: "text-yellow-600 dark:text-yellow-400" },
@@ -235,9 +235,9 @@ export const ScheduleGrid = ({
                           shift.status?.type === "posted" ? "border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/10" :
                           "border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50"
                       )}
-                      onClick={() => handleShiftClick(shift)}
+                      onClick={() => handleShiftClick(shift as Shift)}
                     >
-                      {renderStatusBadge(shift.status)}
+                      {renderStatusBadge(shift.status as ShiftStatus)}
                       
                       <div className="text-xs font-medium text-gray-900 dark:text-gray-100">
                         {shift.startTime} - {shift.endTime}
@@ -252,7 +252,7 @@ export const ScheduleGrid = ({
                         </div>
                       )}
                       
-                      {shift.covering && (
+                      {'covering' in shift && shift.covering && (
                         <div className="mt-1 text-[10px] bg-gray-100 dark:bg-gray-800 rounded px-1.5 py-0.5 text-gray-600 dark:text-gray-300 inline-block">
                           Covering for {shift.covering.for}
                         </div>
