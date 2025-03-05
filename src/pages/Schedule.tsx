@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
@@ -6,15 +7,16 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar, Plus, Filter, ChevronLeft, ChevronRight, Users, Clock } from "lucide-react";
 import { format, addDays, subDays, startOfWeek, endOfWeek } from "date-fns";
 import { CreateScheduleModal } from "@/components/schedule/CreateScheduleModal";
-import { ScheduleGrid } from "@/components/schedule/ScheduleGrid";
+import { ScheduleGrid, Shift } from "@/components/schedule/ScheduleGrid";
 import { ScheduleHeader } from "@/components/schedule/ScheduleHeader";
 import { ShiftModal } from "@/components/schedule/ShiftModal";
+import { CopyScheduleModal } from "@/components/schedule/CopyScheduleModal";
 import { useToast } from "@/hooks/use-toast";
 
 const mockTeamMembers = [
-  { id: "1", name: "John Doe", position: "Cashier" },
-  { id: "2", name: "Jane Smith", position: "Manager" },
-  { id: "3", name: "Mike Johnson", position: "Stocker" }
+  { id: "1", name: "John Doe", position: "Cashier", hours: 40 },
+  { id: "2", name: "Jane Smith", position: "Manager", hours: 38 },
+  { id: "3", name: "Mike Johnson", position: "Stocker", hours: 28 }
 ];
 
 const mockPositions = [
@@ -23,12 +25,50 @@ const mockPositions = [
   { id: "3", name: "Stocker" }
 ];
 
+// Mock shifts data
+const mockShifts: Shift[] = [
+  { 
+    id: "1", 
+    employeeId: "1", 
+    day: "Mon", 
+    startTime: "09:00", 
+    endTime: "17:00", 
+    position: "Cashier", 
+    duration: "8h",
+    status: { type: "approved", label: "Approved" }
+  },
+  { 
+    id: "2", 
+    employeeId: "2", 
+    day: "Mon", 
+    startTime: "12:00", 
+    endTime: "20:00", 
+    position: "Manager", 
+    duration: "8h",
+    status: { type: "pending", label: "Pending" } 
+  },
+  { 
+    id: "3", 
+    employeeId: "3", 
+    day: "Tue", 
+    startTime: "10:00", 
+    endTime: "18:00", 
+    position: "Stocker", 
+    duration: "8h",
+    status: { type: "posted", label: "Open" },
+    conflict: true
+  }
+];
+
 const Schedule = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [currentView, setCurrentView] = useState<"week" | "day">("week");
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showShiftModal, setShowShiftModal] = useState(false);
+  const [showCopyScheduleModal, setShowCopyScheduleModal] = useState(false);
   const [scheduleCreated, setScheduleCreated] = useState(false);
+  const [shifts, setShifts] = useState<Shift[]>(mockShifts);
+  const [selectedShift, setSelectedShift] = useState<Shift | undefined>(undefined);
   const { toast } = useToast();
 
   const startDate = currentView === "week" 
@@ -69,15 +109,165 @@ const Schedule = () => {
   };
 
   const handleCreateShift = () => {
+    setSelectedShift(undefined);
     setShowShiftModal(true);
   };
 
-  const handleSaveShift = (shiftData: any) => {
+  const handleShiftClick = (shift: Shift) => {
+    setSelectedShift(shift);
+    setShowShiftModal(true);
+  };
+
+  const handleSaveShift = (shiftData: Partial<Shift>) => {
+    if (selectedShift) {
+      // Update existing shift
+      setShifts(shifts.map(shift => 
+        shift.id === selectedShift.id 
+          ? { ...shift, ...shiftData } 
+          : shift
+      ));
+      toast({
+        title: "Shift updated!",
+        description: "The shift has been updated successfully.",
+      });
+    } else {
+      // Create new shift
+      const newShift: Shift = {
+        id: `shift-${Date.now()}`,
+        employeeId: shiftData.employeeId || "",
+        day: "Mon", // Default to Monday
+        startTime: shiftData.startTime || "",
+        endTime: shiftData.endTime || "",
+        position: shiftData.position || "",
+        duration: calculateDuration(shiftData.startTime || "", shiftData.endTime || ""),
+        status: { type: "pending", label: "Pending" },
+        note: shiftData.note
+      };
+      
+      setShifts([...shifts, newShift]);
+      toast({
+        title: "Shift created!",
+        description: "The shift has been added to the schedule.",
+      });
+    }
+    
+    setShowShiftModal(false);
+    setSelectedShift(undefined);
+  };
+
+  const handleDeleteShift = (shiftId: string) => {
+    setShifts(shifts.filter(shift => shift.id !== shiftId));
     setShowShiftModal(false);
     toast({
-      title: "Shift created!",
-      description: "The shift has been added to the schedule.",
+      title: "Shift deleted",
+      description: "The shift has been removed from the schedule.",
     });
+  };
+
+  const handleCopyShift = (shiftData: Partial<Shift>, applyToWeek: boolean) => {
+    if (selectedShift) {
+      if (applyToWeek) {
+        // Copy to all days of the week
+        const daysOfWeek = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+        const newShifts = daysOfWeek
+          .filter(day => day !== selectedShift.day) // Don't duplicate for the same day
+          .map(day => ({
+            id: `shift-${Date.now()}-${day}`,
+            employeeId: shiftData.employeeId || selectedShift.employeeId,
+            day,
+            startTime: shiftData.startTime || selectedShift.startTime,
+            endTime: shiftData.endTime || selectedShift.endTime,
+            position: shiftData.position || selectedShift.position,
+            duration: calculateDuration(
+              shiftData.startTime || selectedShift.startTime, 
+              shiftData.endTime || selectedShift.endTime
+            ),
+            status: { type: "pending", label: "Pending" },
+            note: shiftData.note || selectedShift.note
+          }));
+        
+        setShifts([...shifts, ...newShifts]);
+        toast({
+          title: "Shifts copied to week",
+          description: `${newShifts.length} new shifts have been created.`,
+        });
+      } else {
+        // Copy as a single new shift
+        const newShift: Shift = {
+          id: `shift-${Date.now()}`,
+          employeeId: shiftData.employeeId || selectedShift.employeeId,
+          day: selectedShift.day,
+          startTime: shiftData.startTime || selectedShift.startTime,
+          endTime: shiftData.endTime || selectedShift.endTime,
+          position: shiftData.position || selectedShift.position,
+          duration: calculateDuration(
+            shiftData.startTime || selectedShift.startTime, 
+            shiftData.endTime || selectedShift.endTime
+          ),
+          status: { type: "pending", label: "Pending" },
+          note: shiftData.note || selectedShift.note
+        };
+        
+        setShifts([...shifts, newShift]);
+        toast({
+          title: "Shift copied",
+          description: "A copy of the shift has been created.",
+        });
+      }
+    }
+    
+    setShowShiftModal(false);
+    setSelectedShift(undefined);
+  };
+
+  const handleCopySchedule = (weekOffset: number) => {
+    // In a real app, this would fetch the previous schedule from the database
+    // For now, we'll just create some dummy shifts to show the feature
+    const newShifts = mockShifts.map(shift => ({
+      ...shift,
+      id: `shift-copy-${Date.now()}-${shift.id}`,
+      status: { type: "pending", label: "Pending" }
+    }));
+    
+    setShifts([...shifts, ...newShifts]);
+    toast({
+      title: "Schedule copied",
+      description: `${newShifts.length} shifts have been copied from the previous schedule.`,
+    });
+  };
+
+  const handleAddShift = (employeeId: string, day: string) => {
+    setSelectedShift(undefined);
+    setShowShiftModal(true);
+  };
+
+  const handlePublish = () => {
+    toast({
+      title: "Schedule published",
+      description: "The schedule has been published and team members have been notified.",
+    });
+  };
+
+  // Helper function to calculate shift duration
+  const calculateDuration = (startTime: string, endTime: string): string => {
+    if (!startTime || !endTime) return "0h";
+    
+    const [startHour, startMin] = startTime.split(":").map(Number);
+    const [endHour, endMin] = endTime.split(":").map(Number);
+    
+    let hours = endHour - startHour;
+    let minutes = endMin - startMin;
+    
+    if (minutes < 0) {
+      hours -= 1;
+      minutes += 60;
+    }
+    
+    if (hours < 0) {
+      hours += 24; // Handle overnight shifts
+    }
+    
+    return minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`;
   };
 
   return (
@@ -148,14 +338,27 @@ const Schedule = () => {
           <CardContent className="p-0">
             {scheduleCreated ? (
               <div>
-                <ScheduleHeader 
-                  date={startDate} 
-                  viewType={currentView} 
-                />
+                <div className="p-6">
+                  <ScheduleHeader 
+                    date={startDate}
+                    viewType={currentView}
+                    dateRange={currentView === "week"
+                      ? `${format(startDate, "MMM d")} - ${format(endDate, "MMM d, yyyy")}`
+                      : format(currentDate, "EEEE, MMMM d, yyyy")}
+                    onDateRangeChange={direction => direction === "prev" ? handlePrevious() : handleNext()}
+                    onPublish={handlePublish}
+                    publishCount={3}
+                    onCopyPrevious={() => setShowCopyScheduleModal(true)}
+                  />
+                </div>
                 <ScheduleGrid 
-                  startDate={startDate} 
-                  viewType={currentView} 
-                  onCreateShift={handleCreateShift}
+                  days={currentView === "week" 
+                    ? ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] 
+                    : [format(currentDate, "EEE")]}
+                  teamMembers={mockTeamMembers}
+                  shifts={shifts}
+                  onShiftClick={handleShiftClick}
+                  onAddShift={handleAddShift}
                 />
               </div>
             ) : (
@@ -239,13 +442,17 @@ const Schedule = () => {
                   <Plus className="mr-2 h-4 w-4" />
                   Add New Shift
                 </Button>
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-start"
+                  onClick={() => setShowCopyScheduleModal(true)}
+                >
+                  <Calendar className="mr-2 h-4 w-4" />
+                  Copy Previous Schedule
+                </Button>
                 <Button variant="outline" className="w-full justify-start">
                   <Users className="mr-2 h-4 w-4" />
                   Manage Assignments
-                </Button>
-                <Button variant="outline" className="w-full justify-start">
-                  <Calendar className="mr-2 h-4 w-4" />
-                  Copy Previous Schedule
                 </Button>
               </CardContent>
             </Card>
@@ -265,9 +472,21 @@ const Schedule = () => {
         <ShiftModal
           isOpen={showShiftModal}
           onClose={() => setShowShiftModal(false)}
+          shift={selectedShift}
           teamMembers={mockTeamMembers}
           positions={mockPositions}
           onSave={handleSaveShift}
+          onCopy={handleCopyShift}
+          onDelete={handleDeleteShift}
+        />
+      )}
+
+      {showCopyScheduleModal && (
+        <CopyScheduleModal
+          isOpen={showCopyScheduleModal}
+          onClose={() => setShowCopyScheduleModal(false)}
+          onCopy={handleCopySchedule}
+          currentDate={currentDate}
         />
       )}
     </AppLayout>
