@@ -27,6 +27,9 @@ import { PositionsRolesModal } from "@/components/positions/PositionsRolesModal"
 import { CompanyProfileModal } from "@/components/company/CompanyProfileModal";
 import { useNavigate } from "react-router-dom";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { RecentActivity } from "@/components/dashboard/RecentActivity";
+import { generateMockActivities } from "@/utils/activityData";
+import type { ActivityItem } from "@/components/dashboard/ActivityItem";
 
 const Index = () => {
   const [showOnboarding, setShowOnboarding] = useState(false);
@@ -195,6 +198,12 @@ const Index = () => {
     },
   ];
   
+  const [activities, setActivities] = useState<ActivityItem[]>([]);
+
+  useEffect(() => {
+    setActivities(generateMockActivities(8));
+  }, []);
+
   return (
     <AppLayout>
       <TooltipProvider>
@@ -352,16 +361,9 @@ const Index = () => {
           </div>
           
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <Card className="lg:col-span-2">
-              <CardHeader>
-                <CardTitle className="text-xl">Recent Activity</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center justify-center h-40 text-gray-500">
-                  Complete setup tasks to see activity here
-                </div>
-              </CardContent>
-            </Card>
+            <div className="lg:col-span-2">
+              <RecentActivity activities={activities} />
+            </div>
             
             <Card id="quick-actions">
               <CardHeader>
