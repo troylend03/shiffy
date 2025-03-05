@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { ScheduleHeader } from "@/components/schedule/ScheduleHeader";
@@ -12,7 +11,7 @@ import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, A
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Filter, Users, Clock, Calendar, ChevronRight } from "lucide-react";
+import { Filter, Users, Clock, Calendar, ChevronRight, Check } from "lucide-react";
 import { toast } from "sonner";
 
 const Schedule = () => {
