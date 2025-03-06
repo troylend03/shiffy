@@ -1,0 +1,102 @@
+
+// Import all component styles
+@import 'RecentActivity.scss';
+@import 'ActivityItem.scss';
+
+// Global styles that would replace some Tailwind utilities
+body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f9fafb;
+  color: #111827;
+}
+
+// Dark mode
+@media (prefers-color-scheme: dark) {
+  body {
+    background-color: #111827;
+    color: #f9fafb;
+  }
+}
+
+// Utility classes
+.flex {
+  display: flex;
+}
+
+.flex-row {
+  flex-direction: row;
+}
+
+.flex-col {
+  flex-direction: column;
+}
+
+.items-center {
+  align-items: center;
+}
+
+.justify-between {
+  justify-content: space-between;
+}
+
+.space-y-1 > * + * {
+  margin-top: 0.25rem;
+}
+
+.space-y-2 > * + * {
+  margin-top: 0.5rem;
+}
+
+.space-y-4 > * + * {
+  margin-top: 1rem;
+}
+
+.space-x-2 > * + * {
+  margin-left: 0.5rem;
+}
+
+.space-x-4 > * + * {
+  margin-left: 1rem;
+}
+
+// Text utilities
+.text-sm {
+  font-size: 0.875rem;
+}
+
+.text-lg {
+  font-size: 1.125rem;
+}
+
+.text-xl {
+  font-size: 1.25rem;
+}
+
+.font-medium {
+  font-weight: 500;
+}
+
+.font-semibold {
+  font-weight: 600;
+}
+
+.text-gray-500 {
+  color: #6b7280;
+}
+
+.text-gray-700 {
+  color: #374151;
+}
+
+// Dark mode text colors
+@media (prefers-color-scheme: dark) {
+  .text-gray-500 {
+    color: #9ca3af;
+  }
+  
+  .text-gray-700 {
+    color: #d1d5db;
+  }
+}

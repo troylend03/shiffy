@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { Component } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -27,6 +27,10 @@ import type { ActivityItem } from "@/components/dashboard/ActivityItem";
 import { DashboardStats } from "@/components/dashboard/DashboardStats";
 import { generateDashboardStats } from "@/utils/dashboardData";
 import { useNavigate } from "react-router-dom";
+import { InviteModal } from "@/components/team/InviteModal";
+import { CreateScheduleModal } from "@/components/schedule/CreateScheduleModal";
+import { PositionsRolesModal } from "@/components/positions/PositionsRolesModal";
+import { CompanyProfileModal } from "@/components/company/CompanyProfileModal";
 
 const Index = () => {
   const [showOnboarding, setShowOnboarding] = useState(false);
