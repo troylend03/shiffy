@@ -1,7 +1,21 @@
 
 import { faker } from '@faker-js/faker';
-import { type ActivityItem, type ActivityType } from '@/components/dashboard/ActivityItem';
-import { format, subDays } from 'date-fns';
+import { format } from 'date-fns';
+
+export type ActivityType = 'shift_created' | 'shift_assigned' | 'team_joined' | 'message_sent' | 'time_off_approved' | 'company_updated' | 'announcement';
+
+export interface ActivityItem {
+  id: string;
+  type: ActivityType;
+  title: string;
+  description: string;
+  timestamp: string;
+  user: {
+    id: string;
+    name: string;
+    avatar: string;
+  };
+}
 
 export function generateMockActivities(count: number = 10): ActivityItem[] {
   const activityTypes: ActivityType[] = [
