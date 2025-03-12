@@ -1,52 +1,68 @@
-
-import React, { Component } from "react";
+import React, { useState, useEffect } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
-import { TooltipProvider } from "@/components/ui/tooltip";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { OnboardingWizard } from "@/components/onboarding/OnboardingWizard";
 import { CompanySetupStep } from "@/components/onboarding/steps/CompanySetupStep";
 import { InviteTeamStep } from "@/components/onboarding/steps/InviteTeamStep";
 import { ScheduleTemplateStep } from "@/components/onboarding/steps/ScheduleTemplateStep";
+import { Avatar } from "@/components/ui/avatar";
+import { Progress } from "@/components/ui/progress";
 import { useNotifications } from "@/contexts/NotificationContext";
-import { RecentActivity } from "@/components/dashboard/RecentActivity";
-import { generateMockActivities } from "@/utils/activityData";
-import type { ActivityItem } from "@/components/dashboard/ActivityItem";
-import { DashboardStats } from "@/components/dashboard/DashboardStats";
-import { generateDashboardStats } from "@/utils/dashboardData";
-import { useNavigate } from "react-router-dom";
+import { 
+  ArrowRight, 
+  Calendar, 
+  CheckCircle2, 
+  Mail, 
+  Users, 
+  BarChart4,
+  MessageSquare,
+  ClipboardList,
+  Briefcase,
+  HelpCircle
+} from "lucide-react";
 import { InviteModal } from "@/components/team/InviteModal";
 import { CreateScheduleModal } from "@/components/schedule/CreateScheduleModal";
 import { PositionsRolesModal } from "@/components/positions/PositionsRolesModal";
 import { CompanyProfileModal } from "@/components/company/CompanyProfileModal";
-import { WelcomeCard } from "@/components/dashboard/WelcomeCard";
-import { SetupTasks } from "@/components/dashboard/SetupTasks";
-import { QuickActions } from "@/components/dashboard/QuickActions";
+import { useNavigate } from "react-router-dom";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { RecentActivity } from "@/components/dashboard/RecentActivity";
+import { generateMockActivities } from "@/utils/activityData";
+import type { ActivityItem } from "@/components/dashboard/ActivityItem";
 
-interface SetupTask {
-  id: number;
-  title: string;
-  completed: boolean;
-}
-
-interface IndexState {
-  showOnboarding: boolean;
-  showInviteModal: boolean;
-  showScheduleModal: boolean;
-  showPositionsModal: boolean;
-  showCompanyProfileModal: boolean;
-  setupTasks: SetupTask[];
-  isFirstTimeUser: boolean;
-  currentTip: number;
-  showTips: boolean;
-  activities: ActivityItem[];
-  dashboardStats: any;
-}
-
-class Index extends Component<{}, IndexState> {
-  private notificationContext = useNotifications();
-  private navigate = useNavigate();
+const Index = () => {
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [showInviteModal, setShowInviteModal] = useState(false);
+  const [showScheduleModal, setShowScheduleModal] = useState(false);
+  const [showPositionsModal, setShowPositionsModal] = useState(false);
+  const [showCompanyProfileModal, setShowCompanyProfileModal] = useState(false);
+  const { addNotification } = useNotifications();
+  const navigate = useNavigate();
   
-  onboardingTips = [
+  const [setupTasks, setSetupTasks] = useState([
+    { id: 1, title: "Complete company profile", completed: false },
+    { id: 2, title: "Invite team members", completed: false },
+    { id: 3, title: "Create your first schedule", completed: false },
+    { id: 4, title: "Set up positions and roles", completed: false },
+    { id: 5, title: "Configure notification preferences", completed: false },
+  ]);
+  
+  const completedTasks = setupTasks.filter(task => task.completed).length;
+  const setupProgress = (completedTasks / setupTasks.length) * 100;
+  
+  const quickStats = [
+    { title: "Team Members", value: "0", icon: Users, color: "bg-blue-500" },
+    { title: "Published Shifts", value: "0", icon: Calendar, color: "bg-green-500" },
+    { title: "Open Shifts", value: "0", icon: ClipboardList, color: "bg-yellow-500" },
+    { title: "Unread Messages", value: "0", icon: MessageSquare, color: "bg-purple-500" },
+  ];
+
+  const [isFirstTimeUser, setIsFirstTimeUser] = useState(true);
+  const [currentTip, setCurrentTip] = useState(0);
+  const [showTips, setShowTips] = useState(true);
+  
+  const onboardingTips = [
     {
       title: "Welcome to Shiftly",
       description: "Let's get you started with creating your perfect scheduling solution!",
@@ -68,8 +84,103 @@ class Index extends Component<{}, IndexState> {
       element: "quick-actions",
     },
   ];
+
+  const nextTip = () => {
+    if (currentTip < onboardingTips.length - 1) {
+      setCurrentTip(currentTip + 1);
+    } else {
+      setShowTips(false);
+      localStorage.setItem('shiftlyOnboardingComplete', 'true');
+    }
+  };
+
+  const skipTips = () => {
+    setShowTips(false);
+    localStorage.setItem('shiftlyOnboardingComplete', 'true');
+  };
+
+  useEffect(() => {
+    const onboardingComplete = localStorage.getItem('shiftlyOnboardingComplete');
+    if (onboardingComplete === 'true') {
+      setIsFirstTimeUser(false);
+      setShowTips(false);
+    }
+  }, []);
+
+  const handleCompleteOnboarding = () => {
+    setShowOnboarding(false);
+    addNotification({
+      title: "Onboarding complete!",
+      message: "You're all set to start using Shiftly.",
+      type: "success",
+    });
+  };
+
+  const handleStartFlow = (taskId: number) => {
+    switch (taskId) {
+      case 1: // Complete company profile
+        setShowCompanyProfileModal(true);
+        break;
+      case 2: // Invite team members
+        setShowInviteModal(true);
+        break;
+      case 3: // Create your first schedule
+        setShowScheduleModal(true);
+        break;
+      case 4: // Set up positions and roles
+        setShowPositionsModal(true);
+        break;
+      default:
+        setShowOnboarding(true);
+    }
+  };
   
-  onboardingSteps = [
+  const markTaskCompleted = (taskId: number) => {
+    setSetupTasks(setupTasks.map(task => 
+      task.id === taskId ? { ...task, completed: true } : task
+    ));
+  };
+
+  const handleCompleteCompanyProfile = () => {
+    markTaskCompleted(1);
+    setShowCompanyProfileModal(false);
+    addNotification({
+      title: "Company profile updated",
+      message: "Your company profile has been saved successfully.",
+      type: "success",
+    });
+  };
+
+  const handleInviteTeamMembers = () => {
+    markTaskCompleted(2);
+    setShowInviteModal(false);
+    addNotification({
+      title: "Team invitations sent",
+      message: "Invitations have been sent to your team members.",
+      type: "success",
+    });
+  };
+
+  const handleCreateSchedule = (data: any) => {
+    markTaskCompleted(3);
+    setShowScheduleModal(false);
+    
+    setTimeout(() => {
+      navigate("/schedule");
+    }, 1000);
+  };
+
+  const handleSetupPositions = () => {
+    markTaskCompleted(4);
+    setShowPositionsModal(false);
+    addNotification({
+      title: "Positions and roles configured",
+      message: "Your positions and roles have been set up successfully.",
+      type: "success",
+    });
+  };
+  
+  const onboardingSteps = [
     {
       title: "Company Setup",
       description: "Tell us about your business to customize your experience.",
@@ -87,263 +198,277 @@ class Index extends Component<{}, IndexState> {
     },
   ];
   
-  constructor(props: {}) {
-    super(props);
-    
-    this.state = {
-      showOnboarding: false,
-      showInviteModal: false,
-      showScheduleModal: false,
-      showPositionsModal: false,
-      showCompanyProfileModal: false,
-      setupTasks: [
-        { id: 1, title: "Complete company profile", completed: false },
-        { id: 2, title: "Invite team members", completed: false },
-        { id: 3, title: "Create your first schedule", completed: false },
-        { id: 4, title: "Set up positions and roles", completed: false },
-        { id: 5, title: "Configure notification preferences", completed: false },
-      ],
-      isFirstTimeUser: true,
-      currentTip: 0,
-      showTips: true,
-      activities: [],
-      dashboardStats: generateDashboardStats()
-    };
-  }
-  
-  componentDidMount() {
-    // Check onboarding status
-    const onboardingComplete = localStorage.getItem('shiftlyOnboardingComplete');
-    if (onboardingComplete === 'true') {
-      this.setState({
-        isFirstTimeUser: false,
-        showTips: false
-      });
-    }
-    
-    // Load activities and stats
-    this.setState({
-      activities: generateMockActivities(8),
-      dashboardStats: generateDashboardStats()
-    });
-  }
-  
-  nextTip = () => {
-    const { currentTip } = this.state;
-    
-    if (currentTip < this.onboardingTips.length - 1) {
-      this.setState({ currentTip: currentTip + 1 });
-    } else {
-      this.setState({ showTips: false });
-      localStorage.setItem('shiftlyOnboardingComplete', 'true');
-    }
-  };
+  const [activities, setActivities] = useState<ActivityItem[]>([]);
 
-  skipTips = () => {
-    this.setState({ showTips: false });
-    localStorage.setItem('shiftlyOnboardingComplete', 'true');
-  };
-  
-  handleCompleteOnboarding = () => {
-    this.setState({ showOnboarding: false });
-    this.notificationContext.addNotification({
-      title: "Onboarding complete!",
-      message: "You're all set to start using Shiftly.",
-      type: "success",
-    });
-  };
+  useEffect(() => {
+    setActivities(generateMockActivities(8));
+  }, []);
 
-  handleStartFlow = (taskId: number) => {
-    switch (taskId) {
-      case 1: // Complete company profile
-        this.setState({ showCompanyProfileModal: true });
-        break;
-      case 2: // Invite team members
-        this.setState({ showInviteModal: true });
-        break;
-      case 3: // Create your first schedule
-        this.setState({ showScheduleModal: true });
-        break;
-      case 4: // Set up positions and roles
-        this.setState({ showPositionsModal: true });
-        break;
-      default:
-        this.setState({ showOnboarding: true });
-    }
-  };
-  
-  markTaskCompleted = (taskId: number) => {
-    this.setState(prevState => ({
-      setupTasks: prevState.setupTasks.map(task => 
-        task.id === taskId ? { ...task, completed: true } : task
-      )
-    }));
-  };
-
-  handleCompleteCompanyProfile = () => {
-    this.markTaskCompleted(1);
-    this.setState({ showCompanyProfileModal: false });
-    this.notificationContext.addNotification({
-      title: "Company profile updated",
-      message: "Your company profile has been saved successfully.",
-      type: "success",
-    });
-  };
-
-  handleInviteTeamMembers = () => {
-    this.markTaskCompleted(2);
-    this.setState({ showInviteModal: false });
-    this.notificationContext.addNotification({
-      title: "Team invitations sent",
-      message: "Invitations have been sent to your team members.",
-      type: "success",
-    });
-  };
-
-  handleCreateSchedule = (data: any) => {
-    this.markTaskCompleted(3);
-    this.setState({ showScheduleModal: false });
-    
-    setTimeout(() => {
-      this.navigate("/schedule");
-    }, 1000);
-  };
-
-  handleSetupPositions = () => {
-    this.markTaskCompleted(4);
-    this.setState({ showPositionsModal: false });
-    this.notificationContext.addNotification({
-      title: "Positions and roles configured",
-      message: "Your positions and roles have been set up successfully.",
-      type: "success",
-    });
-  };
-  
-  getSetupProgress = () => {
-    const { setupTasks } = this.state;
-    const completedTasks = setupTasks.filter(task => task.completed).length;
-    return (completedTasks / setupTasks.length) * 100;
-  };
-  
-  getCurrentTipDetails = () => {
-    const { currentTip } = this.state;
-    if (currentTip >= 0 && currentTip < this.onboardingTips.length) {
-      return {
-        title: this.onboardingTips[currentTip].title,
-        description: this.onboardingTips[currentTip].description
-      };
-    }
-    return null;
-  };
-
-  render() {
-    const { 
-      showOnboarding, 
-      showInviteModal, 
-      showScheduleModal, 
-      showPositionsModal, 
-      showCompanyProfileModal,
-      setupTasks,
-      isFirstTimeUser,
-      currentTip,
-      showTips,
-      activities,
-      dashboardStats
-    } = this.state;
-    
-    const setupProgress = this.getSetupProgress();
-    const tipDetails = this.getCurrentTipDetails();
-
-    return (
-      <AppLayout>
-        <TooltipProvider>
-          <div className="space-y-8">
-            <WelcomeCard 
-              isFirstTimeUser={isFirstTimeUser}
-              showTips={showTips}
-              currentTip={currentTip}
-              onStartSetup={() => this.setState({ showOnboarding: true })}
-              onStartGuide={() => this.setState({ showTips: true })}
-              onSkipTips={this.skipTips}
-              onNextTip={this.nextTip}
-              tipDetails={tipDetails}
-            />
+  return (
+    <AppLayout>
+      <TooltipProvider>
+        <div className="space-y-8">
+          <div id="welcome-card" className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 relative">
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight">Welcome to Shiftly</h1>
+              <p className="text-lg text-gray-500 dark:text-gray-400 mt-1">
+                Your all-in-one scheduling solution
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              {isFirstTimeUser && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button variant="outline" size="sm" onClick={() => setShowTips(true)}>
+                      <HelpCircle size={16} className="mr-2" />
+                      Guide Me
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent className="p-2">
+                    <p>Start the interactive guide</p>
+                  </TooltipContent>
+                </Tooltip>
+              )}
+              <Button 
+                className="bg-shiftly-blue hover:bg-shiftly-blue/90"
+                onClick={() => setShowOnboarding(true)}
+              >
+                <CheckCircle2 size={16} className="mr-2" />
+                Complete Setup
+              </Button>
+            </div>
             
-            <DashboardStats stats={dashboardStats} />
-            
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="lg:col-span-2">
-                <SetupTasks 
-                  setupTasks={setupTasks}
-                  setupProgress={setupProgress}
-                  onStartTask={this.handleStartFlow}
-                />
-              
-                <div className="mt-6">
-                  <RecentActivity activities={activities} />
+            {showTips && currentTip === 0 && (
+              <div className="absolute top-full mt-2 left-0 right-0 bg-blue-50 dark:bg-blue-900/30 p-4 rounded-lg border border-blue-200 dark:border-blue-800 z-10 shadow-lg">
+                <h3 className="font-medium text-blue-800 dark:text-blue-300 flex items-center gap-2">
+                  <HelpCircle size={16} />
+                  {onboardingTips[currentTip].title}
+                </h3>
+                <p className="text-blue-600 dark:text-blue-400 mt-1">
+                  {onboardingTips[currentTip].description}
+                </p>
+                <div className="flex justify-between mt-3">
+                  <Button variant="outline" size="sm" onClick={skipTips}>
+                    Skip
+                  </Button>
+                  <Button size="sm" className="bg-blue-500 hover:bg-blue-600" onClick={nextTip}>
+                    Next
+                  </Button>
                 </div>
               </div>
-              
-              <QuickActions 
-                onCreateSchedule={() => this.setState({ showScheduleModal: true })}
-                onInviteTeam={() => this.setState({ showInviteModal: true })}
-                onEditCompanyProfile={() => this.setState({ showCompanyProfileModal: true })}
-                showTip={showTips}
-                currentTip={currentTip}
-                onSkipTips={this.skipTips}
-                onNextTip={this.nextTip}
-                tipDetails={tipDetails ? {
-                  title: tipDetails.title,
-                  description: tipDetails.description
-                } : { title: "", description: "" }}
-              />
-            </div>
+            )}
           </div>
           
-          {showOnboarding && (
-            <OnboardingWizard
-              steps={this.onboardingSteps}
-              onComplete={this.handleCompleteOnboarding}
-              onCancel={() => this.setState({ showOnboarding: false })}
-            />
-          )}
+          <Card id="setup-tasks">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-xl">Getting Started</CardTitle>
+              <CardDescription>
+                Complete these tasks to get the most out of Shiftly
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-6">
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span>Setup progress</span>
+                    <span className="font-medium">
+                      {completedTasks}/{setupTasks.length} tasks
+                    </span>
+                  </div>
+                  <Progress value={setupProgress} className="h-2" />
+                </div>
+                
+                <div className="space-y-3">
+                  {setupTasks.map((task) => (
+                    <div 
+                      key={task.id} 
+                      className="flex items-center p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                    >
+                      <div 
+                        className={`h-8 w-8 rounded-full flex items-center justify-center mr-4 ${
+                          task.completed 
+                            ? "bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400" 
+                            : "bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400"
+                        }`}
+                      >
+                        {task.completed ? (
+                          <CheckCircle2 size={16} />
+                        ) : (
+                          <ArrowRight size={16} />
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <p className={`font-medium ${task.completed ? "text-gray-500 dark:text-gray-400 line-through" : ""}`}>
+                          {task.title}
+                        </p>
+                      </div>
+                      {!task.completed && (
+                        <Button 
+                          size="sm" 
+                          variant="ghost" 
+                          className="text-shiftly-blue"
+                          onClick={() => handleStartFlow(task.id)}
+                        >
+                          Start
+                        </Button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <div id="quick-stats" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 relative">
+            {quickStats.map((stat, index) => (
+              <Card key={index} className="overflow-hidden">
+                <div className={`h-1 ${stat.color}`} />
+                <CardContent className="pt-6">
+                  <div className="flex items-center gap-4">
+                    <div className={`rounded-full p-3 ${stat.color}/10`}>
+                      <stat.icon className={`h-6 w-6 ${stat.color} bg-clip-text text-transparent`} />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                        {stat.title}
+                      </p>
+                      <h3 className="text-2xl font-bold">{stat.value}</h3>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+            
+            {showTips && currentTip === 1 && (
+              <div className="absolute -top-10 left-0 right-0 bg-blue-50 dark:bg-blue-900/30 p-4 rounded-lg border border-blue-200 dark:border-blue-800 z-10 shadow-lg">
+                <h3 className="font-medium text-blue-800 dark:text-blue-300 flex items-center gap-2">
+                  <HelpCircle size={16} />
+                  {onboardingTips[currentTip].title}
+                </h3>
+                <p className="text-blue-600 dark:text-blue-400 mt-1">
+                  {onboardingTips[currentTip].description}
+                </p>
+                <div className="flex justify-between mt-3">
+                  <Button variant="outline" size="sm" onClick={skipTips}>
+                    Skip
+                  </Button>
+                  <Button size="sm" className="bg-blue-500 hover:bg-blue-600" onClick={nextTip}>
+                    Next
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+          
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2">
+              <RecentActivity activities={activities} />
+            </div>
+            
+            <Card id="quick-actions">
+              <CardHeader>
+                <CardTitle className="text-xl">Quick Actions</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <Button 
+                  className="w-full justify-start bg-shiftly-blue hover:bg-shiftly-blue/90"
+                  onClick={() => setShowScheduleModal(true)}
+                >
+                  <Calendar size={16} className="mr-2" />
+                  Create New Schedule
+                </Button>
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-start"
+                  onClick={() => setShowInviteModal(true)}
+                >
+                  <Users size={16} className="mr-2" />
+                  Invite Team Members
+                </Button>
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-start"
+                  onClick={() => setShowCompanyProfileModal(true)}
+                >
+                  <Briefcase size={16} className="mr-2" />
+                  Edit Company Profile
+                </Button>
+                <Button variant="outline" className="w-full justify-start">
+                  <Mail size={16} className="mr-2" />
+                  Send Announcements
+                </Button>
+                <Button variant="outline" className="w-full justify-start">
+                  <BarChart4 size={16} className="mr-2" />
+                  View Reports
+                </Button>
+                
+                {showTips && currentTip === 3 && (
+                  <div className="mt-4 bg-blue-50 dark:bg-blue-900/30 p-4 rounded-lg border border-blue-200 dark:border-blue-800 z-10 shadow-lg">
+                    <h3 className="font-medium text-blue-800 dark:text-blue-300 flex items-center gap-2">
+                      <HelpCircle size={16} />
+                      {onboardingTips[currentTip].title}
+                    </h3>
+                    <p className="text-blue-600 dark:text-blue-400 mt-1">
+                      {onboardingTips[currentTip].description}
+                    </p>
+                    <div className="flex justify-between mt-3">
+                      <Button variant="outline" size="sm" onClick={skipTips}>
+                        Skip
+                      </Button>
+                      <Button size="sm" className="bg-blue-500 hover:bg-blue-600" onClick={nextTip}>
+                        Next
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+        
+        {showOnboarding && (
+          <OnboardingWizard
+            steps={onboardingSteps}
+            onComplete={handleCompleteOnboarding}
+            onCancel={() => setShowOnboarding(false)}
+          />
+        )}
 
-          {showInviteModal && (
-            <InviteModal 
-              isOpen={showInviteModal} 
-              onClose={() => this.setState({ showInviteModal: false })}
-              onInvite={this.handleInviteTeamMembers}
-            />
-          )}
+        {showInviteModal && (
+          <InviteModal 
+            isOpen={showInviteModal} 
+            onClose={() => setShowInviteModal(false)}
+            onInvite={handleInviteTeamMembers}
+          />
+        )}
 
-          {showScheduleModal && (
-            <CreateScheduleModal 
-              isOpen={showScheduleModal} 
-              onClose={() => this.setState({ showScheduleModal: false })}
-              onCreateSchedule={this.handleCreateSchedule}
-              isFirstTimeUser={isFirstTimeUser}
-            />
-          )}
+        {showScheduleModal && (
+          <CreateScheduleModal 
+            isOpen={showScheduleModal} 
+            onClose={() => setShowScheduleModal(false)}
+            onCreateSchedule={handleCreateSchedule}
+            isFirstTimeUser={isFirstTimeUser}
+          />
+        )}
 
-          {showPositionsModal && (
-            <PositionsRolesModal 
-              isOpen={showPositionsModal} 
-              onClose={() => this.setState({ showPositionsModal: false })}
-              onSubmit={this.handleSetupPositions}
-            />
-          )}
+        {showPositionsModal && (
+          <PositionsRolesModal 
+            isOpen={showPositionsModal} 
+            onClose={() => setShowPositionsModal(false)}
+            onSubmit={handleSetupPositions}
+          />
+        )}
 
-          {showCompanyProfileModal && (
-            <CompanyProfileModal
-              isOpen={showCompanyProfileModal}
-              onClose={() => this.setState({ showCompanyProfileModal: false })}
-              onSave={this.handleCompleteCompanyProfile}
-            />
-          )}
-        </TooltipProvider>
-      </AppLayout>
-    );
-  }
-}
+        {showCompanyProfileModal && (
+          <CompanyProfileModal
+            isOpen={showCompanyProfileModal}
+            onClose={() => setShowCompanyProfileModal(false)}
+            onSave={handleCompleteCompanyProfile}
+          />
+        )}
+      </TooltipProvider>
+    </AppLayout>
+  );
+};
 
 export default Index;

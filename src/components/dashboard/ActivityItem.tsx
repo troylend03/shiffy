@@ -1,6 +1,7 @@
 
-import React, { Component } from "react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import React from "react";
+import { Avatar } from "@/components/ui/avatar";
+import { cn } from "@/lib/utils";
 import { 
   Calendar, 
   MessageSquare, 
@@ -10,7 +11,6 @@ import {
   Briefcase,
   Bell
 } from "lucide-react";
-import "../../styles/ActivityItem.scss";
 
 export type ActivityType = 
   | "shift_created" 
@@ -38,10 +38,8 @@ interface ActivityItemProps {
   activity: ActivityItem;
 }
 
-export class ActivityItem extends Component<ActivityItemProps> {
-  getIcon() {
-    const { activity } = this.props;
-    
+export const ActivityItem: React.FC<ActivityItemProps> = ({ activity }) => {
+  const getIcon = () => {
     switch (activity.type) {
       case "shift_created":
       case "shift_assigned":
@@ -59,47 +57,41 @@ export class ActivityItem extends Component<ActivityItemProps> {
       default:
         return <ClipboardCheck className="h-4 w-4" />;
     }
-  }
+  };
 
-  getIconClassName() {
-    const { activity } = this.props;
-    
+  const getIconColor = () => {
     switch (activity.type) {
       case "shift_created":
-        return "activity-item__icon--shift-created";
+        return "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400";
       case "shift_assigned":
-        return "activity-item__icon--shift-assigned";
+        return "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400";
       case "team_joined":
-        return "activity-item__icon--team-joined";
+        return "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400";
       case "message_sent":
-        return "activity-item__icon--message-sent";
+        return "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400";
       case "time_off_approved":
-        return "activity-item__icon--time-off-approved";
+        return "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400";
       case "company_updated":
-        return "activity-item__icon--company-updated";
+        return "bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-400";
       case "announcement":
-        return "activity-item__icon--announcement";
+        return "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400";
       default:
-        return "";
+        return "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400";
     }
-  }
+  };
 
-  render() {
-    const { activity } = this.props;
-    
-    return (
-      <div className="activity-item">
-        <div className={`activity-item__icon ${this.getIconClassName()}`}>
-          {this.getIcon()}
-        </div>
-        <div className="activity-item__content">
-          <div className="activity-item__content-header">
-            <p className="activity-item__content-header-title">{activity.title}</p>
-            <span className="activity-item__content-header-timestamp">{activity.timestamp}</span>
-          </div>
-          <p className="activity-item__content-description">{activity.description}</p>
-        </div>
+  return (
+    <div className="flex items-start space-x-4 py-3">
+      <div className={cn("rounded-full p-2 flex-shrink-0", getIconColor())}>
+        {getIcon()}
       </div>
-    );
-  }
-}
+      <div className="flex-1 space-y-1">
+        <div className="flex items-center justify-between">
+          <p className="text-sm font-medium">{activity.title}</p>
+          <span className="text-xs text-gray-500 dark:text-gray-400">{activity.timestamp}</span>
+        </div>
+        <p className="text-sm text-gray-500 dark:text-gray-400">{activity.description}</p>
+      </div>
+    </div>
+  );
+};
