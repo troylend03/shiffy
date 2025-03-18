@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar, Plus, Filter, ChevronLeft, ChevronRight, Users, Clock } from "lucide-react";
 import { format, addDays, subDays, startOfWeek, endOfWeek } from "date-fns";
 import { CreateScheduleModal } from "@/components/schedule/CreateScheduleModal";
-import { ScheduleGrid, Shift } from "@/components/schedule/ScheduleGrid";
+import { ScheduleGrid, Shift, ShiftStatus } from "@/components/schedule/ScheduleGrid";
 import { ScheduleHeader } from "@/components/schedule/ScheduleHeader";
 import { ShiftModal } from "@/components/schedule/ShiftModal";
 import { CopyScheduleModal } from "@/components/schedule/CopyScheduleModal";
@@ -25,7 +25,7 @@ const mockPositions = [
   { id: "3", name: "Stocker" }
 ];
 
-// Mock shifts data
+// Mock shifts data with correct typing
 const mockShifts: Shift[] = [
   { 
     id: "1", 
@@ -169,7 +169,7 @@ const Schedule = () => {
       if (applyToWeek) {
         // Copy to all days of the week
         const daysOfWeek = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-        const newShifts = daysOfWeek
+        const newShifts: Shift[] = daysOfWeek
           .filter(day => day !== selectedShift.day) // Don't duplicate for the same day
           .map(day => ({
             id: `shift-${Date.now()}-${day}`,
@@ -223,7 +223,7 @@ const Schedule = () => {
   const handleCopySchedule = (weekOffset: number) => {
     // In a real app, this would fetch the previous schedule from the database
     // For now, we'll just create some dummy shifts to show the feature
-    const newShifts = mockShifts.map(shift => ({
+    const newShifts: Shift[] = mockShifts.map(shift => ({
       ...shift,
       id: `shift-copy-${Date.now()}-${shift.id}`,
       status: { type: "pending", label: "Pending" }

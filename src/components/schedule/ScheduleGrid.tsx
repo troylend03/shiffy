@@ -88,7 +88,7 @@ export const ScheduleGrid = ({
   ];
 
   // Mock data for demo if shifts are empty
-  const displayShifts = shifts.length > 0 ? shifts : [
+  const displayShifts: Shift[] = shifts.length > 0 ? shifts : [
     { 
       id: "shift1", 
       employeeId: "1", 

@@ -28,6 +28,18 @@ import { CompanyProfileModal } from "@/components/company/CompanyProfileModal";
 import { useNavigate } from "react-router-dom";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
+interface InviteModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSendInvites?: (data: any) => void;
+}
+
+interface CompanyProfileModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSubmit?: (data: any) => void;
+}
+
 const Index = () => {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showInviteModal, setShowInviteModal] = useState(false);
@@ -136,16 +148,6 @@ const Index = () => {
     setSetupTasks(setupTasks.map(task => 
       task.id === taskId ? { ...task, completed: true } : task
     ));
-  };
-
-  const handleCompleteCompanyProfile = () => {
-    markTaskCompleted(1);
-    setShowCompanyProfileModal(false);
-    addNotification({
-      title: "Company profile updated",
-      message: "Your company profile has been saved successfully.",
-      type: "success",
-    });
   };
 
   const handleInviteTeamMembers = () => {
@@ -436,7 +438,7 @@ const Index = () => {
           <InviteModal 
             isOpen={showInviteModal} 
             onClose={() => setShowInviteModal(false)}
-            onInvite={handleInviteTeamMembers}
+            onSendInvites={handleInviteTeamMembers}
           />
         )}
 
@@ -461,7 +463,7 @@ const Index = () => {
           <CompanyProfileModal
             isOpen={showCompanyProfileModal}
             onClose={() => setShowCompanyProfileModal(false)}
-            onSave={handleCompleteCompanyProfile}
+            onSubmit={handleCompleteCompanyProfile}
           />
         )}
       </TooltipProvider>
