@@ -1,0 +1,96 @@
+
+.profile-settings {
+  .section-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  
+  .section-description {
+    color: #6b7280;
+    margin-bottom: 24px;
+    font-size: 14px;
+  }
+  
+  .profile-card {
+    margin-bottom: 24px;
+  }
+  
+  .profile-picture-section {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 24px;
+  }
+  
+  .profile-picture-container {
+    position: relative;
+    
+    .profile-picture {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+    
+    .profile-picture-placeholder {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      background-color: #e5e7eb;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      font-weight: 500;
+      color: #6b7280;
+    }
+    
+    .profile-picture-upload {
+      position: absolute;
+      right: 0;
+      bottom: 0;
+    }
+  }
+  
+  .form-group {
+    margin-bottom: 20px;
+  }
+  
+  .form-group-double {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  
+  .button-container {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 32px;
+  }
+}
+
+@media (max-width: 640px) {
+  .profile-settings {
+    .form-group-double {
+      grid-template-columns: 1fr;
+      gap: 8px;
+    }
+  }
+}
+
+// Dark mode
+@media (prefers-color-scheme: dark) {
+  .profile-settings {
+    .section-description {
+      color: #9ca3af;
+    }
+    
+    .profile-picture-container {
+      .profile-picture-placeholder {
+        background-color: #374151;
+        color: #9ca3af;
+      }
+    }
+  }
+}

@@ -1,0 +1,118 @@
+
+.security-settings {
+  .section-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  
+  .section-description {
+    color: #6b7280;
+    margin-bottom: 24px;
+    font-size: 14px;
+  }
+  
+  .security-card {
+    margin-bottom: 24px;
+  }
+  
+  .card-title-with-icon {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .form-group {
+    margin-bottom: 20px;
+  }
+  
+  .input-hint {
+    font-size: 12px;
+    color: #6b7280;
+    margin-top: 4px;
+  }
+  
+  .security-option {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+  }
+  
+  .security-option-info {
+    flex: 1;
+  }
+  
+  .security-label {
+    font-weight: 500;
+    margin-bottom: 4px;
+    display: block;
+  }
+  
+  .security-description {
+    color: #6b7280;
+    font-size: 14px;
+  }
+  
+  .security-select {
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: 1px solid #d1d5db;
+    background-color: white;
+    font-size: 14px;
+  }
+  
+  .checkbox-with-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    
+    label {
+      font-size: 14px;
+    }
+  }
+  
+  .activity-log {
+    padding: 16px;
+    background-color: #f9fafb;
+    border-radius: 6px;
+    text-align: center;
+  }
+  
+  .activity-log-empty {
+    color: #6b7280;
+    font-size: 14px;
+    margin-bottom: 12px;
+  }
+}
+
+// Dark mode
+@media (prefers-color-scheme: dark) {
+  .security-settings {
+    .section-description {
+      color: #9ca3af;
+    }
+    
+    .input-hint {
+      color: #9ca3af;
+    }
+    
+    .security-description {
+      color: #9ca3af;
+    }
+    
+    .security-select {
+      border-color: #4b5563;
+      background-color: #1f2937;
+      color: #e5e7eb;
+    }
+    
+    .activity-log {
+      background-color: #1f2937;
+    }
+    
+    .activity-log-empty {
+      color: #9ca3af;
+    }
+  }
+}
