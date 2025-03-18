@@ -1,7 +1,6 @@
 
-import React, { Component } from 'react';
+import React from 'react';
 import { User, Bell, Shield, Paintbrush } from 'lucide-react';
-import '../../styles/settings/SettingsNav.scss';
 
 type SettingsTab = 'profile' | 'notifications' | 'security' | 'appearance';
 
@@ -10,8 +9,8 @@ interface SettingsNavProps {
   onTabChange: (tab: SettingsTab) => void;
 }
 
-export class SettingsNav extends Component<SettingsNavProps> {
-  navItems = [
+export const SettingsNav = ({ activeTab, onTabChange }: SettingsNavProps) => {
+  const navItems = [
     {
       id: 'profile' as SettingsTab,
       label: 'Profile',
@@ -34,16 +33,18 @@ export class SettingsNav extends Component<SettingsNavProps> {
     }
   ];
   
-  render() {
-    const { activeTab, onTabChange } = this.props;
-    
-    return (
-      <div className="settings-nav">
-        <ul className="settings-nav-list">
-          {this.navItems.map((item) => (
+  return (
+    <div className="w-full md:w-60 bg-card border-b md:border-b-0 md:border-r border-border">
+      <nav className="py-2">
+        <ul className="space-y-1 px-2">
+          {navItems.map((item) => (
             <li 
               key={item.id}
-              className={`settings-nav-item ${activeTab === item.id ? 'active' : ''}`}
+              className={`flex items-center gap-3 px-3 py-2 text-sm rounded-md cursor-pointer transition-colors
+                ${activeTab === item.id 
+                  ? 'bg-primary/10 text-primary font-medium' 
+                  : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                }`}
               onClick={() => onTabChange(item.id)}
             >
               <item.icon size={18} />
@@ -51,7 +52,7 @@ export class SettingsNav extends Component<SettingsNavProps> {
             </li>
           ))}
         </ul>
-      </div>
-    );
-  }
-}
+      </nav>
+    </div>
+  );
+};
