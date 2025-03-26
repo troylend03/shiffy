@@ -81,8 +81,8 @@ export const InviteTeamStep = () => {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor={`phone${index}`}>
-                    Phone (optional)
+                  <Label htmlFor={`phone${index}`} className="flex items-center">
+                    Phone <span className="text-red-500 ml-1">*</span>
                   </Label>
                   <Input
                     id={`phone${index}`}
@@ -90,6 +90,7 @@ export const InviteTeamStep = () => {
                     type="tel"
                     value={invite.phone}
                     onChange={(e) => handleInviteChange(index, "phone", e.target.value)}
+                    required
                   />
                 </div>
               </div>
@@ -164,8 +165,8 @@ export const InviteTeamStep = () => {
             <p className="text-sm text-gray-500 dark:text-gray-400">
               Enter multiple email addresses separated by commas, spaces, or new lines
             </p>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              Note: For bulk invites, phone numbers can be added after team members join.
+            <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">
+              Note: For bulk invites, phone numbers will be required after team members join.
             </p>
           </div>
           

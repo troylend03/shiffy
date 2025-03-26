@@ -13,9 +13,10 @@ import { Building, CheckCircle, Globe, MapPin, Save, Upload } from "lucide-react
 interface CompanyProfileModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onSave?: () => void;
 }
 
-export const CompanyProfileModal = ({ isOpen, onClose }: CompanyProfileModalProps) => {
+export const CompanyProfileModal = ({ isOpen, onClose, onSave }: CompanyProfileModalProps) => {
   const [companyName, setCompanyName] = useState("");
   const [industry, setIndustry] = useState("");
   const [description, setDescription] = useState("");
@@ -83,6 +84,10 @@ export const CompanyProfileModal = ({ isOpen, onClose }: CompanyProfileModalProp
         message: "Your company profile has been successfully updated.",
         type: "success",
       });
+      
+      if (onSave) {
+        onSave();
+      }
       
       setTimeout(() => {
         onClose();
