@@ -37,7 +37,7 @@ interface InviteModalProps {
 interface CompanyProfileModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit?: (data: any) => void;
+  onSave?: (data: any) => void;
 }
 
 const Index = () => {
@@ -473,7 +473,7 @@ const Index = () => {
           <CompanyProfileModal
             isOpen={showCompanyProfileModal}
             onClose={() => setShowCompanyProfileModal(false)}
-            onSubmit={handleCompleteCompanyProfile}
+            onSave={handleCompleteCompanyProfile}
           />
         )}
       </TooltipProvider>
