@@ -13,7 +13,7 @@ import { Building, CheckCircle, Globe, MapPin, Save, Upload } from "lucide-react
 interface CompanyProfileModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave?: () => void;
+  onSave?: (data: any) => void;
 }
 
 export const CompanyProfileModal = ({ isOpen, onClose, onSave }: CompanyProfileModalProps) => {
@@ -85,8 +85,18 @@ export const CompanyProfileModal = ({ isOpen, onClose, onSave }: CompanyProfileM
         type: "success",
       });
       
+      // Create a data object containing all the form values
+      const companyData = {
+        companyName,
+        industry,
+        description,
+        website,
+        logo,
+        locations
+      };
+      
       if (onSave) {
-        onSave();
+        onSave(companyData);
       }
       
       setTimeout(() => {
