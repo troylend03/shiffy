@@ -8,18 +8,19 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Mail, Upload, Plus, Trash2, X, Send, CheckCircle, UserPlus, Clipboard } from "lucide-react";
+import { Mail, Upload, Plus, Trash2, X, Send, CheckCircle, UserPlus, Clipboard, Phone } from "lucide-react";
 import { useNotifications } from "@/contexts/NotificationContext";
 
 interface InviteModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onSendInvites?: (data: any) => void;
 }
 
-export const InviteModal = ({ isOpen, onClose }: InviteModalProps) => {
+export const InviteModal = ({ isOpen, onClose, onSendInvites }: InviteModalProps) => {
   const [activeTab, setActiveTab] = useState("individual");
-  const [invites, setInvites] = useState<Array<{ email: string; role: string; name: string }>>([
-    { email: "", role: "employee", name: "" }
+  const [invites, setInvites] = useState<Array<{ email: string; role: string; name: string; phone: string }>>([
+    { email: "", role: "employee", name: "", phone: "" }
   ]);
   const [bulkEmails, setBulkEmails] = useState("");
   const [bulkRole, setBulkRole] = useState("employee");
@@ -36,7 +37,7 @@ export const InviteModal = ({ isOpen, onClose }: InviteModalProps) => {
   ];
   
   const handleAddInvite = () => {
-    setInvites([...invites, { email: "", role: "employee", name: "" }]);
+    setInvites([...invites, { email: "", role: "employee", name: "", phone: "" }]);
   };
   
   const handleRemoveInvite = (index: number) => {
@@ -45,7 +46,7 @@ export const InviteModal = ({ isOpen, onClose }: InviteModalProps) => {
     setInvites(newInvites);
   };
   
-  const handleInviteChange = (index: number, field: "email" | "role" | "name", value: string) => {
+  const handleInviteChange = (index: number, field: "email" | "role" | "name" | "phone", value: string) => {
     const newInvites = [...invites];
     newInvites[index][field] = value;
     setInvites(newInvites);
@@ -93,6 +94,10 @@ export const InviteModal = ({ isOpen, onClose }: InviteModalProps) => {
         message: `${count} team members have been invited to join your team.`,
         type: "success",
       });
+      
+      if (onSendInvites) {
+        onSendInvites(invites);
+      }
       
       setTimeout(() => {
         onClose();
@@ -143,19 +148,32 @@ export const InviteModal = ({ isOpen, onClose }: InviteModalProps) => {
                       />
                     </div>
                     
-                    <div className="flex gap-2 items-start">
-                      <div className="flex-1">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <div className="space-y-2">
                         <Label htmlFor={`email-${index}`}>Email address</Label>
                         <Input
                           id={`email-${index}`}
                           placeholder="Email address"
+                          type="email"
                           value={invite.email}
                           onChange={(e) => handleInviteChange(index, "email", e.target.value)}
-                          className="mt-1"
                         />
                       </div>
                       
-                      <div className="w-32">
+                      <div className="space-y-2">
+                        <Label htmlFor={`phone-${index}`}>Phone number (optional)</Label>
+                        <Input
+                          id={`phone-${index}`}
+                          placeholder="(555) 123-4567"
+                          type="tel"
+                          value={invite.phone}
+                          onChange={(e) => handleInviteChange(index, "phone", e.target.value)}
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className="flex gap-2 items-start">
+                      <div className="flex-1">
                         <Label htmlFor={`role-${index}`}>Role</Label>
                         <Select 
                           value={invite.role} 
@@ -221,6 +239,9 @@ export const InviteModal = ({ isOpen, onClose }: InviteModalProps) => {
                   />
                   <p className="text-xs text-gray-500">
                     Enter multiple email addresses separated by commas, spaces, or new lines
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    Note: For bulk invites, phone numbers can be added after team members join.
                   </p>
                 </div>
                 

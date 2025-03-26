@@ -13,12 +13,12 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Trash2, Upload, Mail, X } from "lucide-react";
+import { Plus, Trash2, Upload, Mail, X, Phone } from "lucide-react";
 
 export const InviteTeamStep = () => {
   const [activeTab, setActiveTab] = useState("individual");
-  const [invites, setInvites] = useState<Array<{ email: string; role: string }>>([
-    { email: "", role: "employee" }
+  const [invites, setInvites] = useState<Array<{ email: string; role: string; phone: string }>>([
+    { email: "", role: "employee", phone: "" }
   ]);
   const [bulkEmails, setBulkEmails] = useState("");
   
@@ -29,7 +29,7 @@ export const InviteTeamStep = () => {
   ];
   
   const handleAddInvite = () => {
-    setInvites([...invites, { email: "", role: "employee" }]);
+    setInvites([...invites, { email: "", role: "employee", phone: "" }]);
   };
   
   const handleRemoveInvite = (index: number) => {
@@ -38,7 +38,7 @@ export const InviteTeamStep = () => {
     setInvites(newInvites);
   };
   
-  const handleInviteChange = (index: number, field: "email" | "role", value: string) => {
+  const handleInviteChange = (index: number, field: "email" | "role" | "phone", value: string) => {
     const newInvites = [...invites];
     newInvites[index][field] = value;
     setInvites(newInvites);
@@ -63,51 +63,70 @@ export const InviteTeamStep = () => {
         
         <TabsContent value="individual" className="space-y-4 pt-4">
           {invites.map((invite, index) => (
-            <div key={index} className="flex gap-2 items-start">
-              <div className="space-y-2 flex-1">
-                <Label htmlFor={`email${index}`} className="sr-only">
-                  Email
-                </Label>
-                <Input
-                  id={`email${index}`}
-                  placeholder="Email address"
-                  type="email"
-                  value={invite.email}
-                  onChange={(e) => handleInviteChange(index, "email", e.target.value)}
-                />
+            <div key={index} className="space-y-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label htmlFor={`email${index}`}>
+                    Email
+                  </Label>
+                  <div className="flex">
+                    <Input
+                      id={`email${index}`}
+                      placeholder="Email address"
+                      type="email"
+                      value={invite.email}
+                      onChange={(e) => handleInviteChange(index, "email", e.target.value)}
+                    />
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor={`phone${index}`}>
+                    Phone (optional)
+                  </Label>
+                  <Input
+                    id={`phone${index}`}
+                    placeholder="(555) 123-4567"
+                    type="tel"
+                    value={invite.phone}
+                    onChange={(e) => handleInviteChange(index, "phone", e.target.value)}
+                  />
+                </div>
               </div>
               
-              <div className="w-32">
-                <Label htmlFor={`role${index}`} className="sr-only">
-                  Role
-                </Label>
-                <Select 
-                  value={invite.role} 
-                  onValueChange={(value) => handleInviteChange(index, "role", value)}
+              <div className="flex gap-2 items-start">
+                <div>
+                  <Label htmlFor={`role${index}`}>
+                    Role
+                  </Label>
+                  <Select 
+                    value={invite.role} 
+                    onValueChange={(value) => handleInviteChange(index, "role", value)}
+                  >
+                    <SelectTrigger id={`role${index}`} className="mt-1 w-32">
+                      <SelectValue placeholder="Role" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {roles.map((role) => (
+                        <SelectItem key={role.id} value={role.id}>
+                          {role.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => handleRemoveInvite(index)}
+                  disabled={invites.length === 1}
+                  className="mt-7"
                 >
-                  <SelectTrigger id={`role${index}`}>
-                    <SelectValue placeholder="Role" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {roles.map((role) => (
-                      <SelectItem key={role.id} value={role.id}>
-                        {role.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  <Trash2 size={16} />
+                  <span className="sr-only">Remove</span>
+                </Button>
               </div>
-              
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => handleRemoveInvite(index)}
-                disabled={invites.length === 1}
-                className="mt-2"
-              >
-                <Trash2 size={16} />
-                <span className="sr-only">Remove</span>
-              </Button>
             </div>
           ))}
           
@@ -144,6 +163,9 @@ export const InviteTeamStep = () => {
             />
             <p className="text-sm text-gray-500 dark:text-gray-400">
               Enter multiple email addresses separated by commas, spaces, or new lines
+            </p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Note: For bulk invites, phone numbers can be added after team members join.
             </p>
           </div>
           

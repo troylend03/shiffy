@@ -178,7 +178,17 @@ const Index = () => {
       type: "success",
     });
   };
-  
+
+  const handleCompleteCompanyProfile = (data: any) => {
+    markTaskCompleted(1);
+    setShowCompanyProfileModal(false);
+    addNotification({
+      title: "Company profile updated",
+      message: "Your company profile has been updated successfully.",
+      type: "success",
+    });
+  };
+
   const onboardingSteps = [
     {
       title: "Company Setup",
